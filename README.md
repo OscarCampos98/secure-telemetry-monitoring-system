@@ -180,12 +180,32 @@ To remove compiled binaries, use:
 make clean
 ```
 
-
-
-
-
-
 ## Testing 
+The system has undergone testing in individual components, and test cases are now being developed for main.cpp to validate the complete system integration.
+
+### Completed Component Testing
+ - encrypt_decrypt.cpp: Encryption, decryption, and MAC validation were tested using a standalone main function.
+ - telemetry.cpp: Telemetry data generation was verified by running multiple iterations and checking JSON output     
+   consistency.
+ - led_control.cpp: LED functionality was validated separately using command-based testing in its own main function.
+ - Ongoing System-Wide Testing (main.cpp)
+    - Test cases are being developed for main.cpp, where all components work together. These tests will ensure:
+ - Correct command execution (SEND, RESEND, STATUS, DECRYPT)
+ - Encryption and decryption work seamlessly within the full system
+ - MAC validation correctly detects tampering
+ - LED indicators respond appropriately to different system states
+ - Error handling and invalid input detection function as expected
+### Future Enhancements
+ - Automating test cases to validate system behavior under different conditions
+ - Introducing logging-based validation to track unexpected failures
+ - Expanding tests to include simulated network transmission for remote telemetry
+
+
+
+
+
+
+
 
 ## Troubleshooting 
 
