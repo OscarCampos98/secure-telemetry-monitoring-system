@@ -112,14 +112,15 @@ We have already prepared for logging in the following ways:
 Error Handling & Debugging: cerr is used throughout the code to capture encryption failures, decryption errors, and MAC validation issues.
 ```bash
 cerr << "Error during decryption: " << e.what() << endl;
-
 ```
+
 Console Output for Status Messages: System operations such as encryption results, telemetry generation, and LED feedback are printed to the console.
-```bash
 
+```bash
 cout << "System Status: " << message.dump(4) << endl;
-Planned Directory for Logs: A logging/ directory is included in the project structure for future log storage.
 ```
+
+Planned Directory for Logs: A logging/ directory is included in the project structure for future log storage.
 Error Handling & Debugging: cerr is used throughout the code to capture encryption failures, decryption errors, and MAC validation issues.
 
 ### Planned Logging Features
@@ -138,6 +139,51 @@ Error Handling & Debugging: cerr is used throughout the code to capture encrypti
 
 
 ## Build & Run 
+This section provides details on how to compile and execute the Secure Telemetry Monitoring System.
+
+### Prerequisites:
+Before building and running the system, ensure the following dependencies are installed:
+ - Operating System: Linux (Raspberry Pi recommended)
+ - Compiler: GCC (GNU Compiler Collection)
+Libraries:
+ - OpenSSL (for encryption and hashing)
+ - nlohmann/json.hpp (for JSON handling)
+ - To install the required dependencies on a Debian-based system (e.g., Raspberry Pi OS, Ubuntu):
+```
+bash
+sudo apt update
+sudo apt install build-essential libssl-dev
+```
+### Build Instructions:
+The system uses a Makefile for automated compilation.
+To build the project, navigate to the project directory and run:
+
+```bash
+make
+```
+
+This will generate an executable named secure_telemetry in the project root.
+
+### Run Instructions
+After building, execute the system using:
+```bash
+./SCMonitoring
+```
+
+### Execution Options
+When prompted, indicate whether GPIO hardware is available for LED feedback.
+If using a Raspberry Pi with a T-Cobbler setup, ensure the LEDs are connected to the correct GPIO pins before running.
+
+### Cleaning Up
+To remove compiled binaries, use:
+```
+make clean
+```
+
+
+
+
+
 
 ## Testing 
 
