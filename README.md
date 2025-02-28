@@ -35,7 +35,7 @@ The **Secure Telemetry Monitoring System** includes the following key features:
   - Can be adapted for various **uncrewed vehicle systems**.  
   - Designed for **Raspberry Pi** and compatible Linux environments.
  
-  - ## System Components
+## System Components
 
 The **Secure Telemetry Monitoring System** consists of multiple components that work together for **secure telemetry generation, encryption, validation, and monitoring**.
 
@@ -87,6 +87,23 @@ The **Secure Telemetry Monitoring System** consists of multiple components that 
 ### **7. `Makefile` - Build Automation**
 - Defines rules for compiling the program.
 - Ensures all required files are built correctly.
+
+##Directory Structure
+```bash
+secure-telemetry-monitoring-system/
+│-- src/                # Source files
+│   │-- main.cpp
+│   │-- encrypt_decrypt.cpp
+│   │-- telemetry.cpp
+│   │-- led_control.cpp
+│-- include/            # Header files
+│   │-- encrypt_decrypt.h
+│   │-- telemetry.h
+│   │-- led_control.h
+│-- logging/            # Log storage (future implementation)
+│-- Makefile            # Build automation
+│-- README.md           # Project documentation
+```
 
 
 
