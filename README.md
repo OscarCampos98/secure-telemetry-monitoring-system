@@ -88,7 +88,7 @@ The **Secure Telemetry Monitoring System** consists of multiple components that 
 - Defines rules for compiling the program.
 - Ensures all required files are built correctly.
 
-##Directory Structure
+## Directory Structure
 ```bash
 secure-telemetry-monitoring-system/
 │-- src/                # Source files
@@ -105,5 +105,44 @@ secure-telemetry-monitoring-system/
 │-- README.md           # Project documentation
 ```
 
+## Logging System
+The logging system will be implemented to track key events for debugging, security monitoring, and system performance analysis.
+### Current Readiness for Logging:
+We have already prepared for logging in the following ways:
+Error Handling & Debugging: cerr is used throughout the code to capture encryption failures, decryption errors, and MAC validation issues.
+```bash
+cerr << "Error during decryption: " << e.what() << endl;
+
+```
+Console Output for Status Messages: System operations such as encryption results, telemetry generation, and LED feedback are printed to the console.
+```bash
+
+cout << "System Status: " << message.dump(4) << endl;
+Planned Directory for Logs: A logging/ directory is included in the project structure for future log storage.
+```
+Error Handling & Debugging: cerr is used throughout the code to capture encryption failures, decryption errors, and MAC validation issues.
+
+### Planned Logging Features
+- Events to Log:
+  - Telemetry generation (telemetry.cpp)
+  - Encryption & decryption actions (encrypt_decrypt.cpp)
+  - MAC validation results (encrypt_decrypt.cpp)
+  - Security alerts for tampering (main.cpp)
+  - Command executions (main.cpp) 
+  - System errors (any file)
+
+### Implementation Plan:
+- A new module (logger.cpp and logger.h) will be created to manage logging.
+- Logs will be stored in logging/system.log. A log_event() function will be integrated across key parts of the project.
+- Logging will be lightweight to avoid performance issues.
+
+
+## Build & Run 
+
+## Testing 
+
+## Troubleshooting 
+
+## Future Enhancements
 
 
