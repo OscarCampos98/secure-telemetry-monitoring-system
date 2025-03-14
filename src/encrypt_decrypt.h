@@ -24,6 +24,9 @@ std::vector<unsigned char> generateHMAC(const std::vector<unsigned char> &data, 
 std::vector<unsigned char> macAndEncrypt(const std::string &message, const std::vector<unsigned char> &key, std::vector<unsigned char> &iv, const std::vector<unsigned char> &macKey);
 std::vector<unsigned char> decrypt(const std::vector<unsigned char> &ciphertext, const std::vector<unsigned char> &key, const std::vector<unsigned char> &iv);
 bool validateMAC(const std::vector<unsigned char> &mac, const std::vector<unsigned char> &hash, const std::vector<unsigned char> &macKey);
-DecryptionResult decryptAndVerify(const vector<unsigned char> &ciphertext, const vector<unsigned char> &key, const vector<unsigned char> &iv, const vector<unsigned char> &macKey);
+DecryptionResult decryptAndVerify(const std::vector<unsigned char> &ciphertext,
+                                  const std::vector<unsigned char> &key,
+                                  const std::vector<unsigned char> &iv,
+                                  const std::vector<unsigned char> &macKey);
 
 #endif // ENCRYPT_DECRYPT_H
