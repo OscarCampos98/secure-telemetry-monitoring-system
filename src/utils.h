@@ -1,14 +1,22 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <iostream> // For console input and output
-#include <iomanip>  // For formatting output (e.g., timestamp)
-#include <chrono>   // For generating timestamps
-#include <random>   // For random number generation
-#include <string>   // For handling strings
-#include "json.hpp" // JSON library for formatting and handling JSON data
+#include <iostream>
+#include <iomanip>
+#include <chrono>
+#include <random>
+#include <string>
+#include <vector>
+#include "json.hpp"
 #include "thread"
+#include <openssl/sha.h>  // Required for SHA-256 functions
+#include <openssl/hmac.h> // Required for HMAC functions
 
-std::string getCurrentTimestamp();
+using namespace std;
+
+string getCurrentTimestamp();
+string getHMACKey();
+vector<unsigned char> generateHMAC(const vector<unsigned char> &data, const vector<unsigned char> &key);
+string generateKeyFromSeed(const string &seed);
 
 #endif // UTILS_H

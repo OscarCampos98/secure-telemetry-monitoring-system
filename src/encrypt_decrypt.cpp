@@ -1,6 +1,6 @@
-#include "telemetry.h"       // Include telemetry functions
-#include "utils.h"           // Include utility functions
-#include "encrypt_decrypt.h" // Include encryption and decryption functions
+#include "telemetry.h" // Include telemetry functions
+#include "utils.h"     // Include utility functions
+#include "encrypt_decrypt.h"
 
 #include <iostream>
 #include <string>
@@ -25,15 +25,6 @@ void printHex(const string &label, const vector<unsigned char> &data)
     }
     cout << endl;
 }
-
-// Decription result for decryptAndVerify
-struct DecryptionResult
-{
-    string plaintext;           // Decrypted JSON as a string
-    bool macValid;              // MAC Validation
-    string timestamp;           // Timestamp of decryption (for logs)
-    vector<unsigned char> hash; // Extracted hash (for forensic analysis)
-};
 
 // Helper functions:
 
@@ -176,25 +167,10 @@ vector<unsigned char> encrypt(const vector<unsigned char> &plaintext,
     return ciphertext;
 }
 
-// Generate an HMAC using SHA-256
-vector<unsigned char> generateHMAC(const vector<unsigned char> &data, const vector<unsigned char> &key)
-{
-
-    // buffer for HMAC
-    unsigned int macLength = 0;
-    vector<unsigned char> mac(EVP_MAX_MD_SIZE);
-
-    // compute the HMAC using openSSL
-    unsigned char *result = HMAC(EVP_sha256(), key.data(), key.size(), data.data(), data.size(), mac.data(), &macLength);
-    if (!result)
-    {
-        throw runtime_error("Failed to compute MAC");
-    }
-
-    // Resize to the actual MAC length
-    mac.resize(macLength);
-    return mac;
-}
+/** Moved "generateHMAC" function to utils.cpp
+ * Generate an HMAC using SHA-256
+ */
+//
 
 vector<unsigned char> macAndEncrypt(const string &message, const vector<unsigned char> &key,
                                     vector<unsigned char> &iv, const vector<unsigned char> &macKey)
@@ -287,11 +263,12 @@ bool validateMAC(const vector<unsigned char> &plaintext, const vector<unsigned c
 }
 
 // Decrypt and verify
-DecryptionResult decryptAndVerify(const vector<unsigned char> &ciphertext,
-                                  const vector<unsigned char> &key,
-                                  const vector<unsigned char> &iv,
-                                  const vector<unsigned char> &macKey)
+DecryptionResult decryptAndVerify(const std::vector<unsigned char> &ciphertext,
+                                  const std::vector<unsigned char> &key,
+                                  const std::vector<unsigned char> &iv,
+                                  const std::vector<unsigned char> &macKey)
 {
+
     try
     {
         if (ciphertext.empty())

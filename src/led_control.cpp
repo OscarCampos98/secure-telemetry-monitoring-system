@@ -6,9 +6,12 @@
 
 using namespace std;
 
-// GPIO pin definitions
+/*
+moved to the led_control.h file
+
 const string GREEN_LED = "19"; // GPIO 19 (Green LED)
 const string RED_LED = "26";   // GPIO 26 (Red LED)
+*/
 
 void writeToFile(const string &path, const string &value)
 {
