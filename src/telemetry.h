@@ -5,7 +5,7 @@
 #include "json.hpp"
 
 // Function prototypes
-std::string getCurrentTimestamp();
+// std::string getCurrentTimestamp();
 nlohmann::json generateTelemetryData();
 
 #endif // TELEMETRY_H

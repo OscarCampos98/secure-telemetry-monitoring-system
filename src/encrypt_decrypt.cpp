@@ -1,3 +1,7 @@
+#include "telemetry.h"       // Include telemetry functions
+#include "utils.h"           // Include utility functions
+#include "encrypt_decrypt.h" // Include encryption and decryption functions
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -6,7 +10,6 @@
 #include <iomanip>        // For hex formatting
 #include <openssl/evp.h>  // OpenSSL EVP API
 #include <openssl/rand.h> // For generating random IV
-#include "telemetry.h"    // Include telemetry functions
 #include <openssl/hmac.h> // HMAC functions
 
 using namespace std;
