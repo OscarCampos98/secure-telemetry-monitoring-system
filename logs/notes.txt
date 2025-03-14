@@ -1,0 +1,52 @@
+
+🔹 What’s Next?
+1️⃣ Implement Log Integrity with HMAC-SHA256
+✅ Goal: Prevent tampering by adding an HMAC-SHA256 signature to each log.
+✅ How?
+
+Generate an HMAC-SHA256 hash for each log entry using a secret key.
+Store the HMAC inside each log or in a separate integrity file.
+Add a verification function to detect tampering.
+✅ Decisions to Make Before Coding
+
+Where to store the hash?
+Inline in Log File (simpler, everything in one place).
+Separate Integrity File (secure_monitoring_hashes.log).
+Use OpenSSL or a custom implementation?
+OpenSSL is faster & secure.
+Custom C++ (if you want full control).
+2️⃣ Implement Log Encryption (AES-256)
+✅ Goal: Encrypt logs so unauthorized users cannot read them.
+✅ How?
+
+Encrypt sensitive log fields before writing to disk.
+Decrypt logs only when needed.
+Store encryption keys securely.
+3️⃣ Plan for Remote Logging
+✅ Future Implementation
+
+Send logs to a remote server instead of storing them locally.
+Possible methods:
+HTTP API (RESTful server)
+Syslog
+Database integration (SQL/NoSQL)
+🔹 Next Steps for You
+1️⃣ Commit your changes when you’re ready.
+2️⃣ Decide:
+
+Store HMAC inside the log or in a separate file?
+Use OpenSSL or custom HMAC-SHA256 implementation?
+3️⃣ When you’re back, we’ll implement generateHMAC() in logger.cpp!
+✅ Everything is ready for when you continue! Let me know when you’re back, and we’ll start coding. 🚀
+
+
+Compiling logger.cpp:
+1. g++ -std=c++17 -Wall -Wextra -I. -lssl -lcrypto -c logger.cpp -o logger.o
+    - creating logger as a -o object file. 
+2. g++ -std=c++17 -Wall -Wextra -I. -lssl -lcrypto -c ../src/utils.cpp -o ../src/utils.o
+    - Recompile utils.cpp to generate utils.o
+3. g++ -o logger_test logger.o ../src/utils.o -lssl -lcrypto
+    - Link everything together while ensuring OpenSSL is linked
+4. when running sudo ./logger_test this is becase the file with the key need root access.
+
+
