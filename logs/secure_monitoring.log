@@ -1,0 +1,4 @@
+{"component":"Test_Component","data":{"key":"value"},"level":"INFO","message":"This is an INFO log message","timestamp":"2025-03-14T06:09:15Z"}
+{"component":"Test_Compounent","data":{"key":"value"},"level":"WARNING","message":"This is a  WARNING log message.","timestamp":"2025-03-14T06:09:15Z"}
+{"component":"Test_Compounent","data":{"key":"value"},"level":"ERROR","message":"This is an ERROR log message.","timestamp":"2025-03-14T06:09:15Z"}
+{"component":"Test_Compounent","data":{"key":"value"},"level":"SECURITY","message":"This is a SECURITY log message.","timestamp":"2025-03-14T06:09:15Z"}
