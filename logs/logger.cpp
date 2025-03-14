@@ -1,4 +1,6 @@
 #include "logger.h"
+#include "/home/pi/Desktop/secure-telemetry-monitoring-system/src/utils.h"
+
 #include <iostream>
 #include <fstream>
 #include <mutex>
@@ -6,67 +8,92 @@
 #include <iomanip>
 #include <sstream>
 #include <nlohmann/json.hpp> // JSON library for structured logs
+#include <sys/stat.h>        // For checking file size
 
 using json = nlohmann::json;
+using namespace std;
 
 // Global log file name
-const std::string LOG_FILE = "/var/log/secure_monitoring.log";
+const string LOG_FILE = "secure_monitoring.log";
 
 // Mutex for thread safety
-std::mutex logMutex;
+mutex logMutex;
 
-// Function to get current timestamp in ISO 8601 format
-std::string getTimestamp()
+/**
+ * Check the size of the log file and rotate if necessary
+ * @return file size in bytes, or -1 if the file does not exist
+ */
+long getLogFileSize()
 {
-    auto now = std::chrono::system_clock::now();
-    auto timeT = std::chrono::system_clock::to_time_t(now);
-    std::tm tmStruct = *std::localtime(&timeT);
-    std::ostringstream oss;
-    oss << std::put_time(&tmStruct, "%Y-%m-%dT%H:%M:%S");
-    return oss.str();
+    struct stat fileStat;
+    if (stat(LOG_FILE.c_str(), &fileStat) == 0)
+    {
+        return fileStat.st_size; // return file size in bytes
+    }
+    return -1; // File does not exist or can't be access.
 }
 
 // Generic logging function
-void writeLog(const std::string &level, const std::string &component, const std::string &message, const json &extraData = {})
+void writeLog(const string &level, const string &component, const string &message, const json &extraData = {})
 {
-    std::lock_guard<std::mutex> lock(logMutex); // Ensure thread safety
+    lock_guard<mutex> lock(logMutex); // Ensure thread safety
 
     json logEntry = {
-        {"timestamp", getTimestamp()},
+        {"timestamp", getCurrentTimestamp()},
         {"level", level},
         {"component", component},
         {"message", message},
         {"data", extraData}};
 
     // Print to console
-    std::cout << logEntry.dump(4) << std::endl;
+    cout << logEntry.dump(4) << endl;
 
     // Append to log file
-    std::ofstream logFile(LOG_FILE, std::ios::app);
+    ofstream logFile(LOG_FILE, ios::app);
     if (logFile.is_open())
     {
-        logFile << logEntry.dump() << std::endl;
+        logFile << logEntry.dump() << endl;
         logFile.close();
     }
 }
 
 // Public log functions
-void logInfo(const std::string &component, const std::string &message, const json &extraData)
+void logInfo(const string &component, const string &message, const json &extraData)
 {
     writeLog("INFO", component, message, extraData);
 }
 
-void logWarning(const std::string &component, const std::string &message, const json &extraData)
+void logWarning(const string &component, const string &message, const json &extraData)
 {
     writeLog("WARNING", component, message, extraData);
 }
 
-void logError(const std::string &component, const std::string &message, const json &extraData)
+void logError(const string &component, const string &message, const json &extraData)
 {
     writeLog("ERROR", component, message, extraData);
 }
 
-void logSecurity(const std::string &component, const std::string &message, const json &extraData)
+void logSecurity(const string &component, const string &message, const json &extraData)
 {
     writeLog("SECURITY", component, message, extraData);
+}
+
+int main()
+{
+    // Test log file size
+    long fileSize = getLogFileSize();
+    cout << "Log file size: " << fileSize << " bytes" << endl;
+
+    // Test current timestamp
+    string timestamp = getCurrentTimestamp();
+    cout << "Current timestamp: " << timestamp << std::endl;
+
+    // Test logging different levels
+    logInfo("Test_Component", "This is an INFO log message", {{"key", "value"}});
+    logWarning("Test_Component", "This is a  WARNING log message.", {{"key", "value"}});
+    logError("Test_Component", "This is an ERROR log message.", {{"key", "value"}});
+    logSecurity("Test_Component", "This is a SECURITY log message.", {{"key", "value"}});
+
+    cout << "Logger test completed!" << endl;
+    return 0;
 }
