@@ -13,8 +13,8 @@ void writeLog(const string &level, const string &component, const string &messag
 bool verifyLogIntegrity(const json &logEntry);
 
 // Public log functions
-void logInfo(const string &component, const string &message, const json &extraData);
-void logWarning(const string &component, const string &message, const json &extraData);
-void logError(const string &component, const string &message, const json &extraData);
-void logSecurity(const string &component, const string &message, const json &extraData);
+void logInfo(const string &component, const string &message, const json &extraData = json::object());
+void logWarning(const string &component, const string &message, const json &extraData = json::object());
+void logError(const string &component, const string &message, const json &extraData = json::object());
+void logSecurity(const string &component, const string &message, const json &extraData = json::object());
 #endif // LOGGER_H
