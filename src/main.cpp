@@ -109,8 +109,8 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
         // logging
         logInfo("Encryption", "Message encrypted successfully.", {{"ciphertext", toHexString(ciphertext)}});
 
-        // Output results
-        cout << "Message Sent. Ciphertext:" << toHexString(ciphertext) << endl;
+        // Output results (removed: toHexString(ciphertext))
+        cout << "Message Sent. Ciphertext:" << endl;
 
         /*TEST
         cout << "Key: " << toHexString(key) << endl;
@@ -144,7 +144,7 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
             // Reuse last formatted message
             vector<unsigned char> ciphertext = macAndEncrypt(lastFormattedMessage, key, iv, macKey);
             lastCiphertext = ciphertext;
-            logInfo("Encryption", "Message re-encrypted sucessfully.", {"ciphertext", toHexString(ciphertext)});
+            logInfo("Encryption", "Message re-encrypted successfully.", {{"ciphertext", toHexString(ciphertext)}});
             cout << "Re-sent Message." << endl;
 
             if (hasGPIO)
@@ -180,8 +180,8 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
         else
         {
             // Attempt to decrypt and verify the last message
-            vector<unsigned char> ciphertext = macAndEncrypt(lastFormattedMessage, key, iv, macKey);
-            vector<unsigned char> data = decrypt(ciphertext, key, iv);
+            // vector<unsigned char> ciphertext = macAndEncrypt(lastFormattedMessage, key, iv, macKey);
+            vector<unsigned char> data = decrypt(lastCiphertext, key, iv);
 
             // Generate keys
             //  Extract MAC,hash, and original JSON
@@ -231,7 +231,7 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
     {
         if (lastFormattedMessage.empty())
         {
-            logInfo("Command", "No message to decrypt!.");
+            logWarning("Decryption", "No message to decrypt!");
             cout << "No message to decrypt!" << endl;
             // Indicate error via LED
             if (hasGPIO)

@@ -57,7 +57,7 @@ void writeLog(const string &level, const string &component, const string &messag
     logEntry["hmac"] = oss.str();
 
     // Print to console
-    cout << logEntry.dump(4) << endl;
+    // cout << logEntry.dump(4) << endl;
 
     // Append to log file
     ofstream logFile(LOG_FILE, ios::app);
@@ -138,6 +138,8 @@ void logSecurity(const string &component, const string &message, const json &ext
     writeLog("SECURITY", component, message, extraData);
 }
 
+/* Testing purpose Main
+
 int main()
 {
     // Test current timestamp
@@ -173,3 +175,4 @@ int main()
     cout << "Logger test completed!" << endl;
     return 0;
 }
+*/

@@ -50,3 +50,53 @@ Compiling logger.cpp:
 4. when running sudo ./logger_test this is becase the file with the key need root access.
 
 
+more info to look at before starting the encryption of sensitive data in logging.cpp 
+🔹 Is the Current Encryption Strategy Correct?
+✅ Yes, based on what we analyzed in encrypt_decrypt.cpp and main.cpp, the encryption method correctly secures telemetry data, commands, and timestamps.
+✅ For logging, we should follow the same encryption approach to maintain consistency.
+
+🔹 Should We Move the Encryption Functions to utils.cpp or Use encrypt_decrypt.h?
+We have two options:
+
+✅ Option 1: Move Encryption Functions to utils.cpp
+📌 How it works:
+
+Move macAndEncrypt() and decryptAndVerify() to utils.cpp so both main.cpp and logger.cpp can use them.
+utils.cpp already contains shared functionality like getHMACKey(), so adding encryption functions makes sense.
+📌 Pros:
+
+Keeps all reusable utility functions in one place.
+Prevents logger.cpp from depending on encrypt_decrypt.cpp (which is more focused on command processing).
+📌 Cons:
+
+We need to update utils.h and modify encrypt_decrypt.cpp to call encryption from utils.cpp instead.
+✅ Option 2: Include encrypt_decrypt.h in logger.cpp
+📌 How it works:
+
+Instead of moving functions, logger.cpp will include encrypt_decrypt.h and directly call the encryption functions.
+📌 Pros:
+
+Less refactoring—just include the header and call the existing functions.
+Ensures no accidental changes to the encryption functions.
+📌 Cons:
+
+logger.cpp will depend on encrypt_decrypt.cpp, which is not ideal since encryption is a general-purpose feature.
+Might make encrypt_decrypt.cpp a dependency in places where it's not needed.
+🔹 Recommended Approach: Move Encryption to utils.cpp
+✅ Moving the encryption functions to utils.cpp is the best choice because:
+
+It keeps all reusable utilities in one place.
+It removes unnecessary dependencies between logger.cpp and encrypt_decrypt.cpp.
+It allows logging and command encryption to share the same methods easily.
+🔹 Next Steps
+1️⃣ Move macAndEncrypt() and decryptAndVerify() from encrypt_decrypt.cpp to utils.cpp.
+2️⃣ Update utils.h with the function declarations.
+3️⃣ Modify encrypt_decrypt.cpp and logger.cpp to call encryption functions from utils.cpp.
+4️⃣ Test encryption in logger.cpp before implementing it fully in logging.
+
+🚀 Let me know when you're ready to move the functions to utils.cpp, and I’ll help with the changes!
+
+- after this we would work on a Database for the logs.
+- we will work on testing for the full file once we are done all of this. 
+
+
