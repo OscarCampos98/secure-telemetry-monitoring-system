@@ -9,23 +9,28 @@
 using namespace std;         // Use the standard namespace
 using json = nlohmann::json; // Shortcut for easier JSON handling
 
+/**
+ * Function moved to utils.cpp to avoid duplication
 // Function to generate the current timestamp in ISO 8601 format
-string getCurrentTimestamp()
-{
-    // Get the current system time
-    auto now = chrono::system_clock::now();
+    string getCurrentTimestamp()
+    {
+        // Get the current system time
+        auto now = chrono::system_clock::now();
 
-    // Convert system time to a time_t object for formatting
-    auto now_time = chrono::system_clock::to_time_t(now);
+        // Convert system time to a time_t object for formatting
+        auto now_time = chrono::system_clock::to_time_t(now);
 
-    // Convert time_t to a UTC time structure
-    tm utc_time = *gmtime(&now_time);
+        // Convert time_t to a UTC time structure
+        tm utc_time = *gmtime(&now_time);
 
-    // Format the time into an ISO 8601 string
-    ostringstream oss;
-    oss << put_time(&utc_time, "%Y-%m-%dT%H:%M:%SZ"); // e.g., "2024-12-05T14:23:05Z"
-    return oss.str();                                 // Return the formatted timestamp as a string
-}
+        // Format the time into an ISO 8601 string
+        ostringstream oss;
+        oss << put_time(&utc_time, "%Y-%m-%dT%H:%M:%SZ"); // e.g., "2024-12-05T14:23:05Z"
+        return oss.str();                                 // Return the formatted timestamp as a string
+    }
+
+
+ */
 
 // Function to generate random telemetry data
 json generateTelemetryData()

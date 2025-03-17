@@ -1,29 +1,22 @@
-#ifndef ENCRYPT_DECRYPT_H
-#define ENCRYPT_DECRYPT_H
+#ifndef LED_CONTROL_H
+#define LED_CONTROL_H
 
 #include <string>
-#include <vector>
+// GPIO pin definitions
+const std::string GREEN_LED = "19"; // GPIO 19 (Green LED)
+const std::string RED_LED = "26";   // GPIO 26 (Red LED)
 
-// Struct to encapsulate decryption results
-struct DecryptionResult
-{
-    std::string plaintext;           // Decrypted JSON as a string
-    bool macValid;                   // MAC Validation
-    std::string timestamp;           // Timestamp of decryption (for logs)
-    std::vector<unsigned char> hash; // Extracted hash (for forensic analysis)
-};
+// GPIO control function prototypes
+void writeToFile(const std::string &path, const std::string &value);
+void exportGPIO(const std::string &pin);
+void setDirection(const std::string &pin, const std::string &direction);
+void setValue(const std::string &pin, const std::string &value);
+void unexportGPIO(const std::string &pin);
 
-// Function prototypes
-std::string formatString(const std::string &command);
-std::vector<unsigned char> generateRandomKey(int length);
-std::vector<unsigned char> generateRandomIV(int length);
-std::string toHexString(const std::vector<unsigned char> &data);
-std::vector<unsigned char> computeSHA256(const std::string &data);
-std::vector<unsigned char> encrypt(const std::vector<unsigned char> &plaintext, const std::vector<unsigned char> &key, std::vector<unsigned char> &iv);
-std::vector<unsigned char> generateHMAC(const std::vector<unsigned char> &data, const std::vector<unsigned char> &key);
-std::vector<unsigned char> macAndEncrypt(const std::string &message, const std::vector<unsigned char> &key, std::vector<unsigned char> &iv, const std::vector<unsigned char> &macKey);
-std::vector<unsigned char> decrypt(const std::vector<unsigned char> &ciphertext, const std::vector<unsigned char> &key, const std::vector<unsigned char> &iv);
-bool validateMAC(const std::vector<unsigned char> &mac, const std::vector<unsigned char> &hash, const std::vector<unsigned char> &macKey);
-DecryptionResult decryptAndVerify(const std::vector<unsigned char> &ciphertext, const std::vector<unsigned char> &key, const std::vector<unsigned char> &iv, const std::vector<unsigned char> &macKey);
+// LED control function prototypes
+void normalOperation();
+void errorDetected();
+void tamperingDetected();
+void allOff();
 
-#endif // ENCRYPT_DECRYPT_H
+#endif // LED_CONTROL_H
