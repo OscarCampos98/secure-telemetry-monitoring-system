@@ -1,3 +1,7 @@
+#include "telemetry.h" // Include telemetry functions
+#include "utils.h"     // Include utility functions
+#include "encrypt_decrypt.h"
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -6,7 +10,6 @@
 #include <iomanip>        // For hex formatting
 #include <openssl/evp.h>  // OpenSSL EVP API
 #include <openssl/rand.h> // For generating random IV
-#include "telemetry.h"    // Include telemetry functions
 #include <openssl/hmac.h> // HMAC functions
 
 using namespace std;
@@ -22,15 +25,6 @@ void printHex(const string &label, const vector<unsigned char> &data)
     }
     cout << endl;
 }
-
-// Decription result for decryptAndVerify
-struct DecryptionResult
-{
-    string plaintext;           // Decrypted JSON as a string
-    bool macValid;              // MAC Validation
-    string timestamp;           // Timestamp of decryption (for logs)
-    vector<unsigned char> hash; // Extracted hash (for forensic analysis)
-};
 
 // Helper functions:
 
@@ -173,25 +167,10 @@ vector<unsigned char> encrypt(const vector<unsigned char> &plaintext,
     return ciphertext;
 }
 
-// Generate an HMAC using SHA-256
-vector<unsigned char> generateHMAC(const vector<unsigned char> &data, const vector<unsigned char> &key)
-{
-
-    // buffer for HMAC
-    unsigned int macLength = 0;
-    vector<unsigned char> mac(EVP_MAX_MD_SIZE);
-
-    // compute the HMAC using openSSL
-    unsigned char *result = HMAC(EVP_sha256(), key.data(), key.size(), data.data(), data.size(), mac.data(), &macLength);
-    if (!result)
-    {
-        throw runtime_error("Failed to compute MAC");
-    }
-
-    // Resize to the actual MAC length
-    mac.resize(macLength);
-    return mac;
-}
+/** Moved "generateHMAC" function to utils.cpp
+ * Generate an HMAC using SHA-256
+ */
+//
 
 vector<unsigned char> macAndEncrypt(const string &message, const vector<unsigned char> &key,
                                     vector<unsigned char> &iv, const vector<unsigned char> &macKey)
@@ -284,11 +263,12 @@ bool validateMAC(const vector<unsigned char> &plaintext, const vector<unsigned c
 }
 
 // Decrypt and verify
-DecryptionResult decryptAndVerify(const vector<unsigned char> &ciphertext,
-                                  const vector<unsigned char> &key,
-                                  const vector<unsigned char> &iv,
-                                  const vector<unsigned char> &macKey)
+DecryptionResult decryptAndVerify(const std::vector<unsigned char> &ciphertext,
+                                  const std::vector<unsigned char> &key,
+                                  const std::vector<unsigned char> &iv,
+                                  const std::vector<unsigned char> &macKey)
 {
+
     try
     {
         if (ciphertext.empty())
@@ -303,8 +283,8 @@ DecryptionResult decryptAndVerify(const vector<unsigned char> &ciphertext,
         // Decrypt the ciphertext
         vector<unsigned char> decryptedData = decrypt(ciphertext, key, iv);
 
-        // Log decrypted data size
-        cerr << "Decrypted data size: " << decryptedData.size() << " bytes" << endl;
+        // Log decrypted data size in logger.cpp
+        // cerr << "Decrypted data size: " << decryptedData.size() << " bytes" << endl;
 
         // Validate size before extracting components
         if (decryptedData.size() < 64)
@@ -328,11 +308,11 @@ DecryptionResult decryptAndVerify(const vector<unsigned char> &ciphertext,
             throw runtime_error("Failed to convert plaintext to string: " + string(e.what()));
         }
 
-        // Log extracted components
-        printHex("Extracted MAC", extractedMAC);
-        printHex("Extracted Hash", extractedHash);
-        cerr << "Extracted Plaintext Size: " << plaintext.size() << " bytes" << endl;
-        cerr << "Extracted Plaintext: " << plaintext << endl;
+        // Log extracted components in logger.cpp
+        // printHex("Extracted MAC", extractedMAC);
+        // printHex("Extracted Hash", extractedHash);
+        // cerr << "Extracted Plaintext Size: " << plaintext.size() << " bytes" << endl;
+        // cerr << "Extracted Plaintext: " << plaintext << endl;
 
         // Validate the MAC
         vector<unsigned char> macData(extractedHash.begin(), extractedHash.end());
@@ -345,7 +325,7 @@ DecryptionResult decryptAndVerify(const vector<unsigned char> &ciphertext,
 
         // Log success and return result
         string decryptionTimestamp = getCurrentTimestamp();
-        cerr << "Decryption successful, Timestamp: " << decryptionTimestamp << endl;
+        // cerr << "Decryption successful, Timestamp: " << decryptionTimestamp << endl;
 
         return {std::move(plaintext), true, decryptionTimestamp, extractedHash};
     }

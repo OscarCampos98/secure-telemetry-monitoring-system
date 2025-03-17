@@ -3,7 +3,7 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -I. -lssl -lcrypto
 
 # Source files
-SOURCES = main.cpp telemetry.cpp encrypt_decrypt.cpp led_control.cpp
+SOURCES = main.cpp telemetry.cpp encrypt_decrypt.cpp led_control.cpp utils.cpp ../logs/logger.cpp
 
 # Object files
 OBJECTS = $(SOURCES:.cpp=.o)

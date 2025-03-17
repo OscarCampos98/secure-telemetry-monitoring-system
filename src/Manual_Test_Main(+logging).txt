@@ -1,0 +1,267 @@
+No message sent (empty = lastcipherTxt) for each commands +logging:
+    Note: This testing txt file does not take into consideration if the user has a GPIO by defult i assume 
+    "Yes" in order to test components and logging functionality. 
+
+SEND -> not executed 
+RESEND:
+        > RESEND
+        {
+            "component": "Command",
+            "data": {},
+            "hmac": "1eedef97926246eb6bf7926e217924a612eb0dabc16538e550546d998a8ef4b9",
+            "level": "INFO",
+            "message": "Received command: RESEND",
+            "timestamp": "2025-03-16T19:55:29Z"
+        }
+        Executing command: RESEND
+        {
+            "component": "Resend",
+            "data": {},
+            "hmac": "dbe83c854d6b2843ac0eb6c510aba07c21fda1a1f69be4d6739138e82e88b4b0",
+            "level": "ERROR",
+            "message": "No message to resend.",
+            "timestamp": "2025-03-16T19:55:29Z"
+        }
+        No message to resend!
+STATUS:
+        > STATUS
+        {
+            "component": "Command",
+            "data": {},
+            "hmac": "2fc26adbf811f8c2e28b1850fc82e7279358f79f43e6c45533bb852d9e183bc6",
+            "level": "INFO",
+            "message": "Received command: STATUS",
+            "timestamp": "2025-03-16T19:56:42Z"
+        }
+        Executing command: STATUS
+        {
+            "component": "Command",
+            "data": {},
+            "hmac": "15e22fdb534f39fa57830fac4e7202b70b48d43186f128f2e533faf2f20c996b",
+            "level": "WARNING",
+            "message": "STATUS requested, but no message was sent.",
+            "timestamp": "2025-03-16T19:56:42Z"
+        }
+        STATUS requested, but no message was sent.
+
+DECRYPT:
+        > DECRYPT
+        {
+            "component": "Command",
+            "data": {},
+            "hmac": "d42795dd0f5f0cd696bae061c3021c761451b0b25981ee7f58b7606c8bb6cbc3",
+            "level": "INFO",
+            "message": "Received command: DECRYPT",
+            "timestamp": "2025-03-16T19:57:25Z"
+        }
+        Executing command: DECRYPT
+        {
+            "component": "Decryption",
+            "data": {},
+            "hmac": "d0af3a57739128427a66b5d9b8d2b247ac3a18947ec27ef18bf58c93049a5eaf",
+            "level": "WARNING",
+            "message": "No message to decrypt!",
+            "timestamp": "2025-03-16T19:57:25Z"
+        }
+        No message to decrypt!
+
+EXIT -> should work as expected:
+        Executing command: EXIT
+        {
+            "component": "Command",
+            "data": {},
+            "hmac": "b7636a95001a08f9eddc4d715214ae0f6a1af18d3b2d68160f15d5ace61b489b",
+            "level": "INFO",
+            "message": "Exiting program...",
+            "timestamp": "2025-03-16T19:58:04Z"
+        }
+        Exiting program...
+        Unexporting GPIO 19 ...
+        Unexporting GPIO 26 ...
+        
+Unknow command +logging:
+
+- EXIT should pick up this Command   
+    - Enter invalid command:
+        > llll
+        {
+            "component": "Command",
+            "data": {},
+            "hmac": "81b57eda92fdef9934672d0f66ecf8413567305a2222f5ec512487c66ee1fd09",
+            "level": "INFO",
+            "message": "Received command: llll",
+            "timestamp": "2025-03-16T20:01:42Z"
+        }
+        Executing command: llll
+        {
+            "component": "Command",
+            "data": {},
+            "hmac": "4f6855329530a1a9dcb9e1149c6bc7f67ea1eda5a9fa43278c60b74d85d8dd29",
+            "level": "INFO",
+            "message": "Unknown command: llll",
+            "timestamp": "2025-03-16T20:01:42Z"
+        }
+        Unknown command: llll
+
+    - Enter nothing "ENTER" key:
+        note: "ENTER" does nothing but termninal creates a new line. Program waits for a correct input.
+        > 
+
+        lll
+        {
+            "component": "Command",
+            "data": {},
+            "hmac": "905927e90bb0337c7ace64da197e6eaeddf127a8d4f33365cdae0af494eb8d14",
+            "level": "INFO",
+            "message": "Received command: lll",
+            "timestamp": "2025-03-16T20:02:28Z"
+        }
+        Executing command: lll
+        {
+            "component": "Command",
+            "data": {},
+            "hmac": "59f0791dc9db01c2fb9676ad6febc6a6e63597851b366e079a7a3baf65dc2a5d",
+            "level": "INFO",
+            "message": "Unknown command: lll",
+            "timestamp": "2025-03-16T20:02:28Z"
+        }
+        Unknown command: lll
+
+         
+    - Enter partial command
+        note: partial commands are not detect consider Unknow
+        > SEN
+        {
+            "component": "Command",
+            "data": {},
+            "hmac": "615f074423771c2f1ce5352cb381a5a830de8d275a8928d17d37470d0a467f15",
+            "level": "INFO",
+            "message": "Received command: SEN",
+            "timestamp": "2025-03-16T20:04:28Z"
+        }
+        Executing command: SEN
+        {
+            "component": "Command",
+            "data": {},
+            "hmac": "7c4ff9e8e849c4cfbf9722a8cb501222ebacac13617198d3e69bee6ce5507e8e",
+            "level": "INFO",
+            "message": "Unknown command: SEN",
+            "timestamp": "2025-03-16T20:04:28Z"
+        }
+        Unknown command: SEN
+        > STATU
+        {
+            "component": "Command",
+            "data": {},
+            "hmac": "8eb92e32391fc8c03a5a8c7571ad3665158e79a7255223005c1a863b10f4c1d9",
+            "level": "INFO",
+            "message": "Received command: STATU",
+            "timestamp": "2025-03-16T20:04:33Z"
+        }
+        Executing command: STATU
+        {
+            "component": "Command",
+            "data": {},
+            "hmac": "fb34e0c221bd943cc071fb53ded48a52cf68a799644477bb19995d49def8e90f",
+            "level": "INFO",
+            "message": "Unknown command: STATU",
+            "timestamp": "2025-03-16T20:04:33Z"
+        }
+        Unknown command: STATU
+        
+
+Normal Operation:
+SEND : 
+    > SEND
+    {
+        "component": "Command",
+        "data": {},
+        "hmac": "e9e5a4f8047d8cb1e0c14e163fdb2ab388fc397292092686a56ed850bc01bdc1",
+        "level": "INFO",
+        "message": "Received command: SEND",
+        "timestamp": "2025-03-16T20:08:05Z"
+    }
+    Executing command: SEND
+    {
+        "component": "Encryption",
+        "data": {
+            "ciphertext": "e69e6526e507d27a854acac7995535f34b7d6c4811e44666c2ae98a48d3847f603207d44094462bbabbe573074b57f3807bfd7149f22aa137d9b719994e4157b8e1f9560e4cd5762de695c397c5adad350bf85ded11b8b929eb6ea032690d45d8ee61f91e2852d23caa4d1829b35593abf17fd6c20ddba84dcf67ed0d0aad90cd9d81709dc618b1f8b9463089188af86d73e271f22d95ed32fbff29ea2dbeff835eab00eecdb3e5d966799ce6de745038d55c8da6dd992b3a5a372de880d6fc0b03c04236d3c383ae8a400e0a69374d12f7ac80110e1cf46177e7d2757b6e37007ad0860aa5c7e2734edde14eb0bf140d41a3ea9d6765f027aeae8db4397fdd5"
+        },
+        "hmac": "e007b1f34334d146a8b00c4b1593332e45b80ca7c5508cee9943ca74778e652d",
+        "level": "INFO",
+        "message": "Message encrypted successfully.",
+        "timestamp": "2025-03-16T20:08:05Z"
+    }
+    Message Sent. Ciphertext:e69e6526e507d27a854acac7995535f34b7d6c4811e44666c2ae98a48d3847f603207d44094462bbabbe573074b57f3807bfd7149f22aa137d9b719994e4157b8e1f9560e4cd5762de695c397c5adad350bf85ded11b8b929eb6ea032690d45d8ee61f91e2852d23caa4d1829b35593abf17fd6c20ddba84dcf67ed0d0aad90cd9d81709dc618b1f8b9463089188af86d73e271f22d95ed32fbff29ea2dbeff835eab00eecdb3e5d966799ce6de745038d55c8da6dd992b3a5a372de880d6fc0b03c04236d3c383ae8a400e0a69374d12f7ac80110e1cf46177e7d2757b6e37007ad0860aa5c7e2734edde14eb0bf140d41a3ea9d6765f027aeae8db4397fdd5
+DECRYPT:
+    Note: Decrypting before send will not work that is if the program just began 
+    running. If a message was sent earlier in the program life cycle then DECRYPT 
+    will decrypt the previous sent message.
+    
+    > DECRYPT
+    {
+        "component": "Command",
+        "data": {},
+        "hmac": "6dfaa55b8a238db0f5890d93f7b8713b64058891576e965265c1fa59dc4d5b99",
+        "level": "INFO",
+        "message": "Received command: DECRYPT",
+        "timestamp": "2025-03-16T20:08:45Z"
+    }
+    Executing command: DECRYPT
+    Decrypted data size: 250 bytes
+    Extracted MAC: ca4045940093d4dee44d88e9dd550e2942a79cccb5e0df22b0b8f8b663c5ed09
+    Extracted Hash: 16773822e0c7c01f3352dac2b5d2fac0f6909e9cd809a36c8fdc9d2c31fa83d0
+    Extracted Plaintext Size: 186 bytes
+    Extracted Plaintext: {"command":"SEND","telemetry":{"battery":69.6460307431586,"gps":{"latitude":-59.6597191977046,"longitude":-143.941451537207},"speed":34.9654806201654},"timestamp":"2025-03-16T20:08:05Z"}
+    Decryption successful, Timestamp: 2025-03-16T20:08:45Z
+    {
+        "component": "Decryption",
+        "data": {
+            "plaintext": "{\"command\":\"SEND\",\"telemetry\":{\"battery\":69.6460307431586,\"gps\":{\"latitude\":-59.6597191977046,\"longitude\":-143.941451537207},\"speed\":34.9654806201654},\"timestamp\":\"2025-03-16T20:08:05Z\"}"
+        },
+        "hmac": "f10d3d9536277c906907f9e031b25575f5675ccd801477306ee752e5629ba22d",
+        "level": "INFO",
+        "message": "Decryption successful.",
+        "timestamp": "2025-03-16T20:08:45Z"
+    }
+    Decryption successful.
+
+
+EXIT:  
+    
+
+RESEND Operation:
+
+SEND: 
+RESEND:
+DECRYPT:
+EXIT: 
+
+STATUS:
+
+option 1:
+STATUS:
+
+option 2:
+SEND: 
+STATUS:
+
+option 3:
+SEND:
+RESEND:
+STATUS:
+
+option 4:
+
+SEND:
+DECRYPT:
+STATUS:
+
+
+Test warning:
+
+Test tampering:
+
+
+
+
