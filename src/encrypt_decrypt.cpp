@@ -283,8 +283,8 @@ DecryptionResult decryptAndVerify(const std::vector<unsigned char> &ciphertext,
         // Decrypt the ciphertext
         vector<unsigned char> decryptedData = decrypt(ciphertext, key, iv);
 
-        // Log decrypted data size
-        cerr << "Decrypted data size: " << decryptedData.size() << " bytes" << endl;
+        // Log decrypted data size in logger.cpp
+        // cerr << "Decrypted data size: " << decryptedData.size() << " bytes" << endl;
 
         // Validate size before extracting components
         if (decryptedData.size() < 64)
@@ -308,11 +308,11 @@ DecryptionResult decryptAndVerify(const std::vector<unsigned char> &ciphertext,
             throw runtime_error("Failed to convert plaintext to string: " + string(e.what()));
         }
 
-        // Log extracted components
-        printHex("Extracted MAC", extractedMAC);
-        printHex("Extracted Hash", extractedHash);
-        cerr << "Extracted Plaintext Size: " << plaintext.size() << " bytes" << endl;
-        cerr << "Extracted Plaintext: " << plaintext << endl;
+        // Log extracted components in logger.cpp
+        // printHex("Extracted MAC", extractedMAC);
+        // printHex("Extracted Hash", extractedHash);
+        // cerr << "Extracted Plaintext Size: " << plaintext.size() << " bytes" << endl;
+        // cerr << "Extracted Plaintext: " << plaintext << endl;
 
         // Validate the MAC
         vector<unsigned char> macData(extractedHash.begin(), extractedHash.end());
@@ -325,7 +325,7 @@ DecryptionResult decryptAndVerify(const std::vector<unsigned char> &ciphertext,
 
         // Log success and return result
         string decryptionTimestamp = getCurrentTimestamp();
-        cerr << "Decryption successful, Timestamp: " << decryptionTimestamp << endl;
+        // cerr << "Decryption successful, Timestamp: " << decryptionTimestamp << endl;
 
         return {std::move(plaintext), true, decryptionTimestamp, extractedHash};
     }
