@@ -18,3 +18,4 @@
 {"component":"Test_Component","data":{"key":"value"},"hmac":"3ba7b9928623b23547d4732ffc68390905c7fe30d7323a3b62e182156ce2c24f","level":"WARNING","message":"This is a WARNING log message.","timestamp":"2025-03-14T22:19:11Z"}
 {"component":"Test_Component","data":{"key":"value"},"hmac":"47560329fd044b40ddd7d7c2acfab5e43c5e05564d65ae794013895c88e43e19","level":"ERROR","message":"This is an ERROR log message.","timestamp":"2025-03-14T22:19:11Z"}
 {"component":"Test_Component","data":{"key":"value"},"hmac":"32302844ed81c3e632bf9695d8602884fde96549f43f5bfbc63848ad1f81a960","level":"SECURITY","message":"This is a SECURITY log message.","timestamp":"2025-03-14T22:19:11Z"}
+{"component":"Test_Component","data":{"key":"value"},"hmac":"223d98a528272c9c1b8e55dcd31acfe6b1dadaba61c2e3af3d9a85fac1a2adc6","level":"INFO","message":"This is a new test log entry","timestamp":"2025-03-18T07:08:43Z"}
