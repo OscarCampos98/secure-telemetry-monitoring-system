@@ -4,17 +4,14 @@
 #include <string>    // For handling strings
 #include <fstream>   // For file input/output
 #include <stdexcept> // For runtime_error
-
-#include <iostream> // For console input and output
-#include <iomanip>  // For formatting output (e.g., timestamp)
-#include <chrono>   // For generating timestamps
-#include "json.hpp" // JSON library for formatting and handling JSON data
+#include <iostream>  // For console input and output
+#include <iomanip>   // For formatting output (e.g., timestamp)
+#include <chrono>    // For generating timestamps
 #include "thread"
 #include <openssl/sha.h>  // Required for SHA256 functions
 #include <openssl/hmac.h> // Required for HMAC functions
 
-using namespace std;         // Use the standard namespace
-using json = nlohmann::json; // Shortcut for easier JSON handling
+using namespace std;
 
 // Function to generate the current timestamp in ISO 8601 format
 string getCurrentTimestamp()

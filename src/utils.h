@@ -7,7 +7,6 @@
 #include <random>
 #include <string>
 #include <vector>
-#include "json.hpp"
 #include "thread"
 #include <openssl/sha.h>  // Required for SHA-256 functions
 #include <openssl/hmac.h> // Required for HMAC functions

@@ -3,6 +3,9 @@
         "chrono": "cpp",
         "thread": "cpp",
         "ostream": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "fstream": "cpp",
+        "iostream": "cpp",
+        "pqxx": "cpp"
     }
 }
