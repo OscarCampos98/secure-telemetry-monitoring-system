@@ -1,6 +1,9 @@
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #include "logger.h"
-#include "/home/pi/Desktop/secure-telemetry-monitoring-system/src/utils.h"
-#include "/home/pi/Desktop/secure-telemetry-monitoring-system/src/encrypt_decrypt.h"
+#include "../src/utils.h"
+#include "../src/encrypt_decrypt.h"
+#include "../database/log_db_operations.h"
 
 #include <iostream>
 #include <fstream>
@@ -59,6 +62,17 @@ void writeLog(const string &level, const string &component, const string &messag
     // Print to console
     // cout << logEntry.dump(4) << endl;
 
+    // Store log PostgreSQL database
+    if (!insertLog(component, message, level, oss.str()))
+    {
+        cout << "Error inserting log into database! Failing back to file-only logging." << endl;
+        logError("Logger", "Database insert failed for log entry!", {{"component", component}, {"message", message}});
+    }
+    else
+    {
+        cout << "log successfully stored in database." << endl;
+    }
+
     // Append to log file
     ofstream logFile(LOG_FILE, ios::app);
     if (logFile.is_open())
@@ -68,13 +82,40 @@ void writeLog(const string &level, const string &component, const string &messag
     }
 }
 
-// verify the HMAC of the log entry
-bool verifyLogIntegrity(const json &logEntry)
+// verify the HMAC of the log entry using database
+bool verifyLogIntegrity(int log_id)
 {
-    if (logEntry.find("hmac") == logEntry.end())
+
+    // Fetch the log entry from the database
+    json logEntry = fetchLogById(log_id);
+
+    // **Debug Output: Print the JSON**
+    cout << "DEBUG: logEntry contents: " << logEntry.dump(4) << endl;
+
+    if (logEntry.empty() || logEntry.find("hmac") == logEntry.end())
     {
-        cout << "Log entry missing HMAC!" << endl;
-        return false;
+        cout << "Log entry missing HMAC in database! Checking file log..." << endl;
+
+        // Attempt to retrive from file
+        ifstream logFile(LOG_FILE);
+        string lastLog;
+        while (getline(logFile, lastLog))
+        {
+            json fileLog = json::parse(lastLog);
+            if (fileLog["id"] == log_id)
+            {
+                logEntry = fileLog;
+                break;
+            }
+        }
+        logFile.close();
+
+        if (logEntry.empty())
+        {
+            cout << "Log entry not found in database or file! Integrity verification failed. " << endl;
+            logSecurity("Logger", "Log entry missing in both database and file!", {{"log_id", log_id}});
+            return false;
+        }
     }
 
     // Extract the HMAC from the log entry
@@ -113,6 +154,7 @@ bool verifyLogIntegrity(const json &logEntry)
     else
     {
         cout << "WARNING: Log entry may have been tampered with!" << endl;
+        logSecurity("Logger", "Log entry verification failed!", {{"log_id", log_id}});
         return false;
     }
 }
@@ -137,42 +179,3 @@ void logSecurity(const string &component, const string &message, const json &ext
 {
     writeLog("SECURITY", component, message, extraData);
 }
-
-/* Testing purpose Main
-
-int main()
-{
-    // Test current timestamp
-    string timestamp = getCurrentTimestamp();
-    cout << "Current timestamp: " << timestamp << endl;
-
-    // Test logging different levels
-    logInfo("Test_Component", "This is an INFO log message", {{"key", "value"}});
-    logWarning("Test_Component", "This is a WARNING log message.", {{"key", "value"}});
-    logError("Test_Component", "This is an ERROR log message.", {{"key", "value"}});
-    logSecurity("Test_Component", "This is a SECURITY log message.", {{"key", "value"}});
-
-    // Read the last log entry
-    ifstream logFile("secure_monitoring.log");
-    string lastLog;
-    json logEntry;
-    while (getline(logFile, lastLog))
-    {
-        logEntry = json::parse(lastLog);
-    }
-    logFile.close();
-
-    // Verify log integrity
-    if (verifyLogIntegrity(logEntry))
-    {
-        cout << "Log entry integrity verified!" << endl;
-    }
-    else
-    {
-        cout << "WARNING: Log entry has been tampered with!" << endl;
-    }
-
-    cout << "Logger test completed!" << endl;
-    return 0;
-}
-*/

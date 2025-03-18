@@ -1,0 +1,95 @@
+SQL review 
+
+command             Description 
+CREATE TABLE        Defines a new table
+INSTER INTO         Adds a new data to a table 
+SELECT              Retrives data from a table 
+UPDATE              Modifies existing data 
+DELETE              Removes data 
+ALTER TABLE         Modifies table structure 
+DROP TABLE          Deletes a table 
+
+database_schema.sql structure
+Column Name     Data-Type           Description
+id              SERIAL PRIMARY KEY  Auto-incrementing log ID
+timestamp       TIMESTAP DEFAULT    Log creating time     
+                CURRENT_TIMESTAMP   
+component       TEXT NOT NULL       Component that generate the log
+message         TEXT NOT NULL       Log message
+log_level       TEXT NOT NULL       Log severity(INFO, WARNING, ERROR)
+hmac            TEXT NOT NULL       Security integrity check 
+
+
+
+Define and Implement Core Functions in log_db_operations.cpp:
+
+insertLog(component, message, log_level, hmac): Insert a log entry into the database.
+deleteLog(log_id): Delete a log entry by ID.
+updateLog(log_id, message): Update the message of a specific log entry.
+fetchLogs(limit): Retrieve the most recent logs (limit optional).
+fetchLogById(log_id): Retrieve a specific log by ID.
+
+ 
+
+
+
+
+
+
+Notes on Current Issues
+Database State Observations
+
+The database currently has 3 logs (id: 3, 4, 8).
+No log with id: 10, which the test program is trying to access.
+The database may have been populated in a loop during testing.
+Test Logger Issues
+
+Infinite Loop Issue: The test program is stuck attempting to log.
+Database Log Exists Check: The program detects an existing log and fails over to file logging.
+HMAC Missing Check: The test may be looking for an incorrect or missing log.
+Next Steps
+
+Clear all database rows: We need a fresh dataset for testing.
+Insert controlled test logs: Ensure predictable behavior.
+Re-run test_logger with a fixed dataset.
+Fix infinite loop issue: Likely caused by while or do-while logic in logger.cpp.
+Action Plan for Tomorrow
+Delete all logs in the database:
+
+sql
+Copy
+Edit
+DELETE FROM logs;
+This will reset the log table for fresh tests.
+
+Insert test logs manually:
+
+sql
+Copy
+Edit
+INSERT INTO logs (component, message, log_level, hmac)
+VALUES ('Test_Component', 'First controlled log entry', 'INFO', 'test_hmac1');
+
+INSERT INTO logs (component, message, log_level, hmac)
+VALUES ('Test_Component', 'Second controlled log entry', 'WARNING', 'test_hmac2');
+Check the test_logger logic:
+
+Ensure it’s correctly retrieving and validating logs.
+Verify log fetching functions handle missing IDs gracefully.
+Investigate the infinite loop cause in logger.cpp.
+Chat Summary
+Today, we worked on debugging logger.cpp and its interaction with the PostgreSQL database. Key issues encountered:
+
+Duplicate Log Issue: We identified and fixed logic to prevent duplicate logs.
+PostgreSQL Access Fix: We corrected authentication settings to allow telemetry_user to access the database.
+Compilation Errors: Resolved missing OpenSSL dependencies and linked the necessary libraries (-lcrypto -lssl).
+test_logger Issues:
+Found HMAC validation failing due to missing log entries.
+Confirmed log integrity check crash when an expected log ID wasn’t found.
+Identified potential infinite loop in the logging test.
+Tomorrow’s plan:
+
+Wipe the database logs for clean testing.
+Insert controlled logs manually to track expected behavior.
+Re-run tests and debug the infinite loop in logger.cpp.
+Once we verify logger.cpp is stable, we’ll proceed with integrating it into the Secure Communication and Monitoring System.
