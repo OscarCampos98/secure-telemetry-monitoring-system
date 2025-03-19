@@ -217,7 +217,7 @@ json fetchLogById(int log_id)
         if (res.empty())
         {
             closeDBConnection(conn);
-            return json{{"error", "Log not found"}};
+            return json{{"error", "Log not found"}}; // return errror JSON explicitly
         }
 
         const auto &row = res[0];

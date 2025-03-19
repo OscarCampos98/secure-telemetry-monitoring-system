@@ -53,6 +53,24 @@ string getHMACKey()
     {
         getline(file, key);
         file.close();
+
+        // Ensure the key is a valid hex string
+        if (key.length() != 64) // HMAC key should be 32 bytes = 64 hex chars
+        {
+            cerr << "ERROR: Invalid HMAC key length!" << endl;
+            throw runtime_error("Invalid HMAC key length in file.");
+        }
+
+        for (char c : key)
+        {
+            if (!isxdigit(c))
+            {
+                cerr << "ERROR: Non-hex character found in HMAC key!" << endl;
+                throw runtime_error("Invalid HMAC key format.");
+            }
+        }
+
+        cout << "DEBUG: Loaded HMAC key: " << key << endl;
         return key;
     }
     else
@@ -60,22 +78,6 @@ string getHMACKey()
         cerr << "ERROR: Unable to open /etc/hmac_key.conf. Check file permissions." << endl;
         throw runtime_error("Failed to open HMAC key file!");
     }
-
-    // If the key file does not exist, generate a key from a seed
-
-    std::string seed = "bt"; // Use the chosen seed value
-    key = generateKeyFromSeed(seed);
-
-    // Store the key securely
-    std::ofstream outFile("/etc/hmac_key.conf");
-    if (!outFile)
-    {
-        throw std::runtime_error("Failed to create HMAC key file!");
-    }
-    outFile << key;
-    outFile.close();
-
-    return key;
 }
 
 // Function to generate HMAC using SHA-256
@@ -96,4 +98,30 @@ vector<unsigned char> generateHMAC(const vector<unsigned char> &data, const vect
     // Resize to the actual MAC length
     mac.resize(macLength);
     return mac;
+}
+
+vector<unsigned char> hexStringToBytes(const string &hex)
+{
+    vector<unsigned char> bytes;
+
+    if (hex.length() % 2 != 0)
+    {
+        cerr << "ERROR: Invalid hex string length!" << endl;
+        throw invalid_argument("Hex string must have an even number of characters.");
+    }
+
+    for (size_t i = 0; i < hex.length(); i += 2)
+    {
+        string byteString = hex.substr(i, 2);
+
+        if (!isxdigit(byteString[0]) || !isxdigit(byteString[1]))
+        {
+            cerr << "ERROR: Invalid hex digit found in key!" << endl;
+            throw invalid_argument("Invalid character in hex string.");
+        }
+
+        bytes.push_back(static_cast<unsigned char>(stoul(byteString, nullptr, 16)));
+    }
+
+    return bytes;
 }
