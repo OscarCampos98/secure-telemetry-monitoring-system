@@ -17,5 +17,6 @@ string getCurrentTimestamp();
 string getHMACKey();
 vector<unsigned char> generateHMAC(const vector<unsigned char> &data, const vector<unsigned char> &key);
 string generateKeyFromSeed(const string &seed);
+vector<unsigned char> hexStringToBytes(const string &hex);
 
 #endif // UTILS_H
