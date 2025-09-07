@@ -1,39 +1,28 @@
 # secure-telemetry-monitoring-system
+> 🚧 Prototype project — core encryption + telemetry pipeline working; logging & network transmission in progress.
 
 ## Introduction
 
-The **Secure Telemetry Monitoring System** is designed to provide **secure data transmission and monitoring** for uncrewed vehicles. It ensures the integrity and confidentiality of telemetry data while allowing real-time command execution and validation.
+Goal: Secure, tamper-resistant telemetry + command channel for Raspberry Pi–based uncrewed systems.
 
-This system implements **AES-256 encryption** and **HMAC-SHA-256 authentication** to protect sensitive telemetry data and commands from tampering or interception. It also includes **LED indicators** to provide real-time feedback on the system’s status, helping operators quickly assess security and operational conditions.
+Security: AES-256-CBC + HMAC-SHA-256.
 
-The project is structured to be modular, making it **scalable and adaptable** to different uncrewed vehicle platforms.
+Feedback: LED status + planned PostgreSQL logs.
 
 ## Features
 
-The **Secure Telemetry Monitoring System** includes the following key features:
+### ✅ Current
+- Telemetry data generator (GPS, speed, battery).
+- AES-256-CBC encryption + HMAC validation.
+- LED feedback (GPIO 19 = green, 26 = red).
+- Command set: SEND, RESEND, STATUS, DECRYPT.
 
-- **Secure Telemetry Data Generation**  
-  - Simulates **GPS coordinates, speed, and battery levels**.  
-  - Outputs data in **JSON format** with timestamps for accurate logging.
+### 📝 Planned/Roadmap
+- [ ] Integrate PostgreSQL logging (schema defined).
+- [ ] Logger module (tamper-resistant logs with HMAC).
+- [ ] Automated integration tests (main.cpp).
+- [ ] Remote telemetry transmission.
 
-- **Command Processing & Validation**  
-  - Supports commands like `SEND`, `RESEND`, `STATUS`, and `DECRYPT`.  
-  - Ensures secure processing with **AES-256 encryption** and **HMAC validation**.  
-
-- **Data Encryption & Integrity Verification**  
-  - Utilizes **AES-256-CBC encryption** to protect telemetry data.  
-  - **HMAC-SHA-256** prevents unauthorized message tampering.  
-
-- **Real-Time LED Feedback (Optional)**  
-  - **Green LED**: Indicates normal operation.  
-  - **Red LED**: Signals errors or tampering detection.  
-  - **Runs in two modes**:  
-    - **With LEDs** (hardware connected to Raspberry Pi using a **T-Cobbler with LED connectors via GPIO**).  
-    - **Without LEDs** (displays status in the terminal for systems without hardware support).  
-
-- **Modular & Scalable Design**  
-  - Can be adapted for various **uncrewed vehicle systems**.  
-  - Designed for **Raspberry Pi** and compatible Linux environments.
  
 ## System Components
 
@@ -167,7 +156,7 @@ This will generate an executable named secure_telemetry in the project root.
 ### Run Instructions
 After building, execute the system using:
 ```bash
-./SCMonitoring
+./STMonitoring
 ```
 
 ### Execution Options
