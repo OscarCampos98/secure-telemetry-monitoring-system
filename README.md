@@ -1,13 +1,13 @@
-# secure-telemetry-monitoring-system
+# Secure Telemetry Monitoring System  
 > 🚧 Prototype project — core encryption + telemetry pipeline working; logging & network transmission in progress.
 
-## Introduction
+The **Secure Telemetry Monitoring System** is a prototype designed for uncrewed vehicles on Raspberry Pi.  
+It focuses on **tamper-resistant telemetry and command channels**, combining:  
+- AES-256-CBC encryption for confidentiality,  
+- HMAC-SHA-256 validation for integrity,  
+- LED status feedback for instant operator awareness,  
+- and planned PostgreSQL logging for long-term auditing.
 
-Goal: Secure, tamper-resistant telemetry + command channel for Raspberry Pi–based uncrewed systems.
-
-Security: AES-256-CBC + HMAC-SHA-256.
-
-Feedback: LED status + planned PostgreSQL logs.
 
 ## Features
 
