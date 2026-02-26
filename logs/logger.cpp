@@ -1,6 +1,9 @@
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #include "logger.h"
-#include "/home/pi/Desktop/secure-telemetry-monitoring-system/src/utils.h"
-#include "/home/pi/Desktop/secure-telemetry-monitoring-system/src/encrypt_decrypt.h"
+#include "../src/utils.h"
+#include "../src/encrypt_decrypt.h"
+#include "../database/log_db_operations.h"
 
 #include <iostream>
 #include <fstream>
@@ -21,7 +24,6 @@ const string LOG_FILE = "secure_monitoring.log";
 mutex logMutex;
 
 // Generic logging function
-// note {} in arguments can't be set to defult value. move this to .h file.
 void writeLog(const string &level, const string &component, const string &message, const json &extraData)
 {
     lock_guard<mutex> lock(logMutex); // Ensure thread safety
@@ -33,33 +35,36 @@ void writeLog(const string &level, const string &component, const string &messag
         {"message", message},
         {"data", extraData}};
 
-    // Convert log entry to string for hashing
     string LogString = logEntry.dump();
 
-    // Retrive the HMAC key
     string hmacKey = getHMACKey();
+    cout << "DEBUG: HMAC key used for logging: " << hmacKey << endl;
 
-    // Convert log enntry and key to unsigned char
     vector<unsigned char> logData(LogString.begin(), LogString.end());
-    vector<unsigned char> KeyData(hmacKey.begin(), hmacKey.end());
+    vector<unsigned char> KeyData = hexStringToBytes(hmacKey);
 
-    // Generate HMAC for the log entry
+    cout << "DEBUG: Log string used for HMAC (logging): " << LogString << endl;
+
     vector<unsigned char> hmac = generateHMAC(logData, KeyData);
 
-    // Convert HMAC to hex string
     ostringstream oss;
     for (unsigned char c : hmac)
     {
         oss << hex << setw(2) << setfill('0') << (int)c;
     }
 
-    // Add HMAC to log entry
     logEntry["hmac"] = oss.str();
 
-    // Print to console
-    // cout << logEntry.dump(4) << endl;
+    if (!insertLog(component, message, level, oss.str()))
+    {
+        cerr << "Error inserting log into database! Falling back to file logging." << endl;
+        logError("Logger", "Database insert failed for log entry!", {{"component", component}, {"message", message}});
+    }
+    else
+    {
+        cout << "Log successfully stored in database." << endl;
+    }
 
-    // Append to log file
     ofstream logFile(LOG_FILE, ios::app);
     if (logFile.is_open())
     {
@@ -68,43 +73,41 @@ void writeLog(const string &level, const string &component, const string &messag
     }
 }
 
-// verify the HMAC of the log entry
-bool verifyLogIntegrity(const json &logEntry)
+bool verifyLogIntegrity(int log_id)
 {
-    if (logEntry.find("hmac") == logEntry.end())
+    json logEntry = fetchLogById(log_id);
+    cout << "DEBUG: Retrieved log entry: " << logEntry.dump(4) << endl;
+
+    if (logEntry.empty() || logEntry.find("hmac") == logEntry.end())
     {
-        cout << "Log entry missing HMAC!" << endl;
+        cout << "Log entry missing HMAC! Checking file log..." << endl;
         return false;
     }
 
-    // Extract the HMAC from the log entry
     string storedHMAC = logEntry["hmac"];
-
-    // Remove the HMAC from the log entry before verification
     json templog = logEntry;
     templog.erase("hmac");
-
-    // convert log entry to string
     string logString = templog.dump();
 
-    // retrive the HMAC key
     string hmacKey = getHMACKey();
+    cout << "DEBUG: HMAC key used for verification: " << hmacKey << endl;
 
-    // Convert log entry and key to unsigned char
     vector<unsigned char> logData(logString.begin(), logString.end());
-    vector<unsigned char> keyData(hmacKey.begin(), hmacKey.end());
+    vector<unsigned char> keyData = hexStringToBytes(hmacKey);
 
-    // Generate expected HMAC
+    cout << "DEBUG: Log string used for HMAC (verification): " << logString << endl;
+
     vector<unsigned char> expectedHMAC = generateHMAC(logData, keyData);
 
-    // Convert HMAC to hex string
     ostringstream oss;
     for (unsigned char c : expectedHMAC)
     {
         oss << hex << setw(2) << setfill('0') << (int)c;
     }
 
-    // Compare the HMAC with expected HMAC
+    cout << "DEBUG: Stored HMAC: " << storedHMAC << endl;
+    cout << "DEBUG: Recomputed HMAC: " << oss.str() << endl;
+
     if (storedHMAC == oss.str())
     {
         cout << "Log entry is valid!" << endl;
@@ -112,12 +115,11 @@ bool verifyLogIntegrity(const json &logEntry)
     }
     else
     {
-        cout << "WARNING: Log entry may have been tampered with!" << endl;
+        cout << "WARNING: Log entry verification failed!" << endl;
         return false;
     }
 }
 
-// Public log functions
 void logInfo(const string &component, const string &message, const json &extraData)
 {
     writeLog("INFO", component, message, extraData);
@@ -137,42 +139,3 @@ void logSecurity(const string &component, const string &message, const json &ext
 {
     writeLog("SECURITY", component, message, extraData);
 }
-
-/* Testing purpose Main
-
-int main()
-{
-    // Test current timestamp
-    string timestamp = getCurrentTimestamp();
-    cout << "Current timestamp: " << timestamp << endl;
-
-    // Test logging different levels
-    logInfo("Test_Component", "This is an INFO log message", {{"key", "value"}});
-    logWarning("Test_Component", "This is a WARNING log message.", {{"key", "value"}});
-    logError("Test_Component", "This is an ERROR log message.", {{"key", "value"}});
-    logSecurity("Test_Component", "This is a SECURITY log message.", {{"key", "value"}});
-
-    // Read the last log entry
-    ifstream logFile("secure_monitoring.log");
-    string lastLog;
-    json logEntry;
-    while (getline(logFile, lastLog))
-    {
-        logEntry = json::parse(lastLog);
-    }
-    logFile.close();
-
-    // Verify log integrity
-    if (verifyLogIntegrity(logEntry))
-    {
-        cout << "Log entry integrity verified!" << endl;
-    }
-    else
-    {
-        cout << "WARNING: Log entry has been tampered with!" << endl;
-    }
-
-    cout << "Logger test completed!" << endl;
-    return 0;
-}
-*/

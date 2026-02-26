@@ -7,7 +7,6 @@
 #include <random>
 #include <string>
 #include <vector>
-#include "json.hpp"
 #include "thread"
 #include <openssl/sha.h>  // Required for SHA-256 functions
 #include <openssl/hmac.h> // Required for HMAC functions
@@ -18,5 +17,6 @@ string getCurrentTimestamp();
 string getHMACKey();
 vector<unsigned char> generateHMAC(const vector<unsigned char> &data, const vector<unsigned char> &key);
 string generateKeyFromSeed(const string &seed);
+vector<unsigned char> hexStringToBytes(const string &hex);
 
 #endif // UTILS_H
