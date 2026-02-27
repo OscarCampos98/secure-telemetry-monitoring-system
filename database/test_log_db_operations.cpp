@@ -25,6 +25,17 @@ int main()
     {
         cout << "Failed to insert test log!" << endl;
     }
+   
+    // Insert a duplicate log to test duplicate prevention
+    cout << "\nTrying to insert the same log again..." << endl;
+    if (insertLog(testComponent, testMessage, testLogLevel, testHmac))
+    {
+        cout << "Duplicate log was inserted! (This should not happen)" << endl;
+    }
+    else
+    {
+        cout << "Duplicate log was correctly prevented!" << endl;
+    }
 
     // Fetch all logs
     cout << "\nFetching all logs (limit 5)..." << endl;
@@ -32,15 +43,14 @@ int main()
 
     // Fetch the latest log entry
     cout << "\nFetching the latest inserted log..." << endl;
-    json lastLog = fetchLogById(5); // Assuming last inserted log ID is 2 for now
-
-    cout << "DEBUG: JSON received from fetchLogById:\n"
+    json lastLog = fetchLatestLog();
+    cout << "DEBUG: JSON received from fetchLatestLog:\n"
          << lastLog.dump(4) << endl;
 
     // Check if lastLog contains an error
-    if (lastLog.find("error") != lastLog.end())
+    if (lastLog.contains("error"))
     {
-        cout << "Failed to retrieve last inserted log: " << lastLog["error"] << ". Exiting test." << endl;
+        cout << "Failed to retrieve latest log: " << lastLog["error"] << endl;
         return 1;
     }
 
@@ -86,16 +96,6 @@ int main()
              << logEntry.dump(4) << endl;
     }
 
-    // Insert a duplicate log to test duplicate prevention
-    cout << "\nTrying to insert the same log again..." << endl;
-    if (insertLog(testComponent, testMessage, testLogLevel, testHmac))
-    {
-        cout << "Duplicate log was inserted! (This should not happen)" << endl;
-    }
-    else
-    {
-        cout << "Duplicate log was correctly prevented!" << endl;
-    }
 
     // Delete the test log
     cout << "\nDeleting test log with ID: " << testLogId << endl;
