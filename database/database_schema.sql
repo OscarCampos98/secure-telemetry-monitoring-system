@@ -20,3 +20,7 @@ CREATE TABLE IF NOT EXISTS logs (
     -- HMAC (Hash-based Message Authentication Code) to verify log integrity
     hmac TEXT NOT NULL
 );
+
+--prevent duplicate logs with same component, message, log_level, 
+CREATE UNIQUE INDEX IF NOT EXISTS LOGS_UNIQUE_ENTRY ON logs (component, message, log_level);
+
