@@ -40,31 +40,32 @@ void writeLog(const string &level, const string &component, const string &messag
     string hmacKey = getHMACKey();
     cout << "DEBUG: HMAC key used for logging: " << hmacKey << endl;
 
-    vector<unsigned char> logData(LogString.begin(), LogString.end());
+    vector<unsigned char> Data(LogString.begin(), LogString.end());
     vector<unsigned char> KeyData = hexStringToBytes(hmacKey);
 
     cout << "DEBUG: Log string used for HMAC (logging): " << LogString << endl;
 
-    vector<unsigned char> hmac = generateHMAC(logData, KeyData);
-
+    vector<unsigned char> hmac = generateHMAC(Data, KeyData);
+    
     ostringstream oss;
     for (unsigned char c : hmac)
     {
         oss << hex << setw(2) << setfill('0') << (int)c;
     }
 
+    // store the HMAC in the log entry
     logEntry["hmac"] = oss.str();
-
-    if (!insertLog(component, message, level, oss.str()))
+    //Store in DB
+    bool db_ok = insertLog(component, message, level, LogString ,oss.str());
+    if((!db_ok))
     {
-        cerr << "Error inserting log into database! Falling back to file logging." << endl;
-        logError("Logger", "Database insert failed for log entry!", {{"component", component}, {"message", message}});
-    }
-    else
-    {
-        cout << "Log successfully stored in database." << endl;
+        cerr << "DB insert failed; writing to file only. "
+                << "Component=" << component << " level=" << level << endl;
+    }else{
+        cout << "Log entry successfully stored in database." << endl;
     }
 
+    //Always right to file (fallback)
     ofstream logFile(LOG_FILE, ios::app);
     if (logFile.is_open())
     {
@@ -78,46 +79,48 @@ bool verifyLogIntegrity(int log_id)
     json logEntry = fetchLogById(log_id);
     cout << "DEBUG: Retrieved log entry: " << logEntry.dump(4) << endl;
 
-    if (logEntry.empty() || logEntry.find("hmac") == logEntry.end())
+    if (logEntry.empty() || logEntry.contains("error"))
     {
-        cout << "Log entry missing HMAC! Checking file log..." << endl;
+        cerr << "verifyLogIntegrity: Log not found or DB error." << endl;
         return false;
     }
 
-    string storedHMAC = logEntry["hmac"];
-    json templog = logEntry;
-    templog.erase("hmac");
-    string logString = templog.dump();
+    if (!logEntry.contains("payload") || !logEntry.contains("hmac"))
+    {
+        cerr << "verifyLogIntegrity: Missing payload or hmac in DB row." << endl;
+        return false;
+    }
+
+    string payload = logEntry["payload"].get<string>();
+    string storedHMAC = logEntry["hmac"].get<string>();
 
     string hmacKey = getHMACKey();
     cout << "DEBUG: HMAC key used for verification: " << hmacKey << endl;
-
-    vector<unsigned char> logData(logString.begin(), logString.end());
+    vector<unsigned char> Data(payload.begin(), payload.end());
     vector<unsigned char> keyData = hexStringToBytes(hmacKey);
 
-    cout << "DEBUG: Log string used for HMAC (verification): " << logString << endl;
-
-    vector<unsigned char> expectedHMAC = generateHMAC(logData, keyData);
+    
+    vector<unsigned char> expectedHMAC = generateHMAC(Data, keyData);
 
     ostringstream oss;
     for (unsigned char c : expectedHMAC)
-    {
         oss << hex << setw(2) << setfill('0') << (int)c;
-    }
+
+    string recomputed = oss.str();
 
     cout << "DEBUG: Stored HMAC: " << storedHMAC << endl;
-    cout << "DEBUG: Recomputed HMAC: " << oss.str() << endl;
+    cout << "DEBUG: Recomputed HMAC: " << recomputed << endl;
 
-    if (storedHMAC == oss.str())
+    if(storedHMAC == recomputed)
     {
         cout << "Log entry is valid!" << endl;
         return true;
     }
-    else
-    {
-        cout << "WARNING: Log entry verification failed!" << endl;
-        return false;
-    }
+   
+    cout << "WARNING: Log entry verification failed!" << endl;
+    return false;
+    
+
 }
 
 void logInfo(const string &component, const string &message, const json &extraData)

@@ -16,7 +16,7 @@ pqxx::connection *connectToDB();
 void closeDBConnection(pqxx::connection *conn);
 
 // function to insert a new log entry into database
-bool insertLog(const string &component, const string &message, const string &log_level, const string &hmac);
+bool insertLog(const string &component, const string &message, const string &log_level, const string &payload, const string &hmac);
 
 // function to delete a log entry by ID
 bool deleteLog(int log_id);
@@ -29,5 +29,8 @@ void fetchLogs(int limit = 10);
 
 // functions to fetch a specific log entry by ID
 json fetchLogById(int log_id);
+
+// functions to fetch the latest log entry
+json fetchLatestLog();
 
 #endif // LOG_DB_OPERATIONS_H

@@ -19,7 +19,18 @@ CREATE TABLE IF NOT EXISTS logs (
 
     -- HMAC (Hash-based Message Authentication Code) to verify log integrity
     hmac TEXT NOT NULL
+
+    
 );
+-- use payload id for hmac verification
+ALTER TABLE logs 
+ADD COLUMN IF NOT EXISTS payload TEXT NOT NULL;
+
+-- Backfill legacy rows so we can enforce NOT NULL
+UPDATE logs SET payload = '' WHERE payload IS NULL;
+
+-- Enforce payload presence for all future rows
+ALTER TABLE logs ALTER COLUMN payload SET NOT NULL;
 
 --prevent duplicate logs with same component, message, log_level, 
 CREATE UNIQUE INDEX IF NOT EXISTS LOGS_UNIQUE_ENTRY ON logs (component, message, log_level);

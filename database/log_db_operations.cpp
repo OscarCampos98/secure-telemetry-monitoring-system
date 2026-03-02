@@ -48,33 +48,40 @@ static bool logExists(const std::string &component,
 }
 
 // Insert a new log entry
-bool insertLog(const string &component, const string &message, const string &log_level, const string &hmac)
+bool insertLog(const string &component,
+               const string &message,
+               const string &log_level,
+               const string &payload,
+               const string &hmac)
 {
     try
+    {
         pqxx::connection conn(getConnString());
         if (!conn.is_open())
             return false;
+
         {
             pqxx::work txn(conn);
 
             string query =
-                "INSERT INTO logs (component, message, log_level, hmac) VALUES (" +
-                txn.quote(component) + ", " + txn.quote(message) + ", " +
-                txn.quote(log_level) + ", " + txn.quote(hmac) + ")";
-            
+                "INSERT INTO logs (component, message, log_level, payload, hmac) VALUES (" +
+                txn.quote(component) + ", " +
+                txn.quote(message) + ", " +
+                txn.quote(log_level) + ", " +
+                txn.quote(payload) + ", " +
+                txn.quote(hmac) + ")";
+
             txn.exec(query);
             txn.commit();
         }
-        
-        return true;     
-    }
 
+        return true;
+    }
     catch (const pqxx::unique_violation &e)
     {
-        std::cerr << "Duplicate prevented by DB: " << e.what() << std::endl;
+        cerr << "Duplicate prevented by DB: " << e.what() << endl;
         return false;
     }
-    
     catch (const exception &e)
     {
         cerr << "Error inserting log: " << e.what() << endl;
@@ -94,22 +101,22 @@ bool deleteLog(int log_id)
 
         {
             pqxx::work txn(conn);
-            std::string query = "DELETE FROM logs WHERE id = " + txn.quote(log_id);
+            string query = "DELETE FROM logs WHERE id = " + txn.quote(log_id);
             txn.exec(query);
             txn.commit();
         }
 
         return true;
     }
-    catch (const std::exception &e)
+    catch (const exception &e)
     {
-        std::cerr << "Error deleting log: " << e.what() << std::endl;
+        cerr << "Error deleting log: " << e.what() << endl;
         return false;
     }
 }
 
 // Update a log entry's message by ID
-bool updateLog(int log_id, const std::string &new_message)
+bool updateLog(int log_id, const string &new_message)
 {
     try
     {
@@ -119,7 +126,7 @@ bool updateLog(int log_id, const std::string &new_message)
 
         {
             pqxx::work txn(conn);
-            std::string query =
+            string query =
                 "UPDATE logs SET message = " + txn.quote(new_message) +
                 " WHERE id = " + txn.quote(log_id);
 
@@ -129,9 +136,9 @@ bool updateLog(int log_id, const std::string &new_message)
 
         return true;
     }
-    catch (const std::exception &e)
+    catch (const exception &e)
     {
-        std::cerr << "Error updating log: " << e.what() << std::endl;
+        cerr << "Error updating log: " << e.what() << endl;
         return false;
     }
 }
@@ -144,33 +151,33 @@ void fetchLogs(int limit)
         pqxx::connection conn(getConnString());
         if (!conn.is_open())
         {
-            std::cerr << "Failed to connect to DB for fetchLogs()." << std::endl;
+            cerr << "Failed to connect to DB for fetchLogs()." << endl;
             return;
         }
 
         {
             pqxx::nontransaction txn(conn);
-            std::string query =
-                "SELECT * FROM logs ORDER BY timestamp DESC LIMIT " + std::to_string(limit);
+            string query =
+                "SELECT * FROM logs ORDER BY timestamp DESC LIMIT " + to_string(limit);
 
             pqxx::result res = txn.exec(query);
 
             for (const auto &row : res)
             {
-                std::cout
+                cout
                     << "ID: " << row["id"].as<int>()
-                    << " | Component: " << row["component"].as<std::string>()
-                    << " | Message: " << row["message"].as<std::string>()
-                    << " | Log Level: " << row["log_level"].as<std::string>()
-                    << " | HMAC: " << row["hmac"].as<std::string>()
-                    << " | Timestamp: " << row["timestamp"].as<std::string>()
-                    << std::endl;
+                    << " | Component: " << row["component"].as<string>()
+                    << " | Message: " << row["message"].as<string>()
+                    << " | Log Level: " << row["log_level"].as<string>()
+                    << " | HMAC: " << row["hmac"].as<string>()
+                    << " | Timestamp: " << row["timestamp"].as<string>()
+                    << endl;
             }
         }
     }
-    catch (const std::exception &e)
+    catch (const exception &e)
     {
-        std::cerr << "Error fetching logs: " << e.what() << std::endl;
+        cerr << "Error fetching logs: " << e.what() << endl;
     }
 }
 
@@ -202,6 +209,7 @@ json fetchLogById(int log_id)
                     {"component", row["component"].as<std::string>()},
                     {"message", row["message"].as<std::string>()},
                     {"log_level", row["log_level"].as<std::string>()},
+                    {"payload", row["payload"].as<std::string>()},
                     {"hmac", row["hmac"].as<std::string>()}};
             }
         }
@@ -242,6 +250,7 @@ json fetchLatestLog()
                     {"component", row["component"].as<std::string>()},
                     {"message", row["message"].as<std::string>()},
                     {"log_level", row["log_level"].as<std::string>()},
+                    {"payload", row["payload"].as<std::string>()},
                     {"hmac", row["hmac"].as<std::string>()}};
             }
         }
