@@ -1,0 +1,26 @@
+{"component":"Test_Component","data":{"test":true},"hmac":"b22b1bada1aed937d5c91746bcccc965c9d8d3061812701618760a2714e26439","level":"INFO","message":"This is a new test log entry","timestamp":"2026-03-02T22:58:58Z"}
+{
+    "hmac": "15b24f70b412288049e367d3cbdfe2e5ee84f1eaa96e0dce753fd2364da73f15",
+    "payload": {
+        "component": "Test_Component",
+        "data": {
+            "test": true
+        },
+        "log_level": "INFO",
+        "message": "This is a new test log entry",
+        "timestamp": "2026-03-04T20:24:50Z"
+    }
+}
+{
+    "hmac": "5466fe806d478c5b992a9b5e1ff2d943e7a30cb90fdb856d06d0f4cb3ad387cb",
+    "payload": {
+        "component": "Test_Component",
+        "data": {
+            "test": true
+        },
+        "log_level": "INFO",
+        "message": "This is a new test log entry",
+        "timestamp": "2026-03-04T20:40:09Z"
+    }
+}
+{"hmac":"1f9581783b2efc2fd172a22e58aa81c39b4a103d9e26712ebb437e60c7179975","payload":{"component":"Test_Component","data":{"test":true},"log_level":"INFO","message":"This is a new test log entry 2026-03-04T20:42:37Z","timestamp":"2026-03-04T20:42:37Z"}}

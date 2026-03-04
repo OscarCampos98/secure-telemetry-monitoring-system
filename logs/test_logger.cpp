@@ -18,8 +18,9 @@ int main()
     // Test 1: Write a log through the logger pipeline
     cout << "Test 1: Writing a log via logInfo()...\n" << endl;
 
-    logInfo("Test_Component", "This is a new test log entry", {{"test", true}});
-
+    string msg = string("This is a new test log entry ") + getCurrentTimestamp();
+    logInfo("Test_Component", msg, {{"test", true}});
+    
     // Test 2: Fetch latest log and verify integrity
     cout << "\nTest 2: Fetch latest log and verify integrity...\n" << endl;
 
