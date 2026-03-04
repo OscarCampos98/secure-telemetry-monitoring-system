@@ -2,7 +2,7 @@
 #define TELEMETRY_H
 
 #include <string>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 // Function prototypes
 // std::string getCurrentTimestamp();

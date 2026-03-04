@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 #include <stdexcept>
-#include "json.hpp"       // JSON library
+#include <nlohmann/json.hpp>       // JSON library
 #include <iomanip>        // For hex formatting
 #include <openssl/evp.h>  // OpenSSL EVP API
 #include <openssl/rand.h> // For generating random IV

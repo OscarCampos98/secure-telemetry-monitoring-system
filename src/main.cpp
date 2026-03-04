@@ -8,7 +8,7 @@
 #include <fstream>
 #include <thread>    //for std::this_thread::sleep_for
 #include <chrono>    //for std::chrono::seconds
-#include "json.hpp"  //for JSON handling
+#include <nlohmann/json.hpp>  // for JSON handling
 #include <termios.h> //for checking key press
 #include <unistd.h>
 #include <fcntl.h>
@@ -18,11 +18,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-string lastFormattedMessage;          // Stores the last formatted JSON message
 vector<unsigned char> lastCiphertext; // Stores the last encrypted message
-vector<unsigned char> key;
-vector<unsigned char> iv;
-vector<unsigned char> macKey;
 string lastCommand;   // NEW: Stores the last executed command
 bool hasGPIO = false; // NEW: Indicates if GPIO pins are available
 
@@ -93,7 +89,7 @@ json updateJSON(const string &originalMessage, const string &status, bool macVal
 
 void handleCommand(const string &command, string &lastFormattedMessage, vector<unsigned char> &key, vector<unsigned char> &iv, vector<unsigned char> &macKey)
 {
-    logInfo("Command", "Received command: " + command);
+    logInfo("Command", "Received command: " + command, {{"command", command}});
     cout << "Executing command: " << command << endl;
 
     if (command == "SEND")
@@ -107,7 +103,8 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
         lastCiphertext = ciphertext;
 
         // logging
-        logInfo("Encryption", "Message encrypted successfully.", {{"ciphertext", toHexString(ciphertext)}});
+        logInfo("Encryption", "Message encrypted successfully.",
+                {{"ciphertext_len", (int)ciphertext.size()}});
 
         // Output results (removed: toHexString(ciphertext))
         cout << "Message Sent. Ciphertext:" << endl;
@@ -132,7 +129,7 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
     {
         if (lastFormattedMessage.empty())
         {
-            logError("Resend", "No message to resend.");
+            logError("Resend", "No message to resend.", {{"command", command}});
             cout << "No message to resend!" << endl;
             if (hasGPIO)
                 errorDetected();
@@ -144,7 +141,8 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
             // Reuse last formatted message
             vector<unsigned char> ciphertext = macAndEncrypt(lastFormattedMessage, key, iv, macKey);
             lastCiphertext = ciphertext;
-            logInfo("Encryption", "Message re-encrypted successfully.", {{"ciphertext", toHexString(ciphertext)}});
+            logInfo("Encryption", "Message encrypted successfully.",
+                     {{"ciphertext_len", (int)ciphertext.size()}});
             cout << "Re-sent Message." << endl;
 
             if (hasGPIO)
@@ -168,7 +166,7 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
         if (lastFormattedMessage.empty())
         {
             // No message to check
-            logWarning("Command", "STATUS requested, but no message was sent.");
+            logWarning("Command", "STATUS requested, but no message was sent.", {{"command", command}});
             cout << "STATUS requested, but no message was sent." << endl;
 
             if (hasGPIO)
@@ -231,7 +229,7 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
     {
         if (lastFormattedMessage.empty())
         {
-            logWarning("Decryption", "No message to decrypt!");
+            logWarning("Decryption", "No message to decrypt!", {{"command", command}});
             cout << "No message to decrypt!" << endl;
             // Indicate error via LED
             if (hasGPIO)
@@ -270,7 +268,11 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
             // Display MAC validation status
             if (result.macValid)
             {
-                logInfo("Decryption", "Decryption successful.", {{"plaintext", result.plaintext}});
+                logInfo("Decryption", "Decryption successful.",
+                        {{"mac_valid", result.macValid},
+                            {"plaintext_len", (int)result.plaintext.size()},
+                            {"timestamp", result.timestamp}});
+
                 cout << "Decryption successful." << endl;
                 // Indicate error via LED
                 if (hasGPIO)
@@ -280,7 +282,7 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
             }
             else if (result.plaintext.empty())
             {
-                logInfo("Command", "Decryption failed: empty plaintext.");
+                logError("Decryption", "Decryption failed: empty plaintext.", {{"command", command}});
                 cout << "Decryption failed: empty plaintext." << endl;
                 if (hasGPIO)
                     errorDetected();
@@ -290,7 +292,10 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
             }
             else
             {
-                logInfo("Decryption", "MAC validation failed! Possible tampering detected.", {{"plaintext", result.plaintext}});
+                logSecurity("Decryption", "MAC validation failed! Possible tampering detected.",
+                            {{"mac_valid", result.macValid},
+                                {"plaintext_len", (int)result.plaintext.size()},
+                                {"timestamp", result.timestamp}});
                 cout << "MAC validation failed! Possible tampering detected" << endl;
                 // Indicate error via LED
                 if (hasGPIO)
@@ -318,7 +323,7 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
 
     else if (command == "EXIT")
     {
-        logInfo("Command", "Exiting program...");
+        logInfo("Command", "Exiting program...", {});
         cout << "Exiting program..." << endl;
         unexportGPIO(GREEN_LED);
         unexportGPIO(RED_LED);
@@ -326,7 +331,7 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
     }
     else
     {
-        logInfo("Command", "Unknown command: " + command);
+        logWarning("Command", "Unknown command: " + command, {{"command", command}});
         cout << "Unknown command: " << command << endl;
     }
 }

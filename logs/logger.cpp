@@ -27,23 +27,24 @@ mutex logMutex;
 void writeLog(const string &level, const string &component, const string &message, const json &extraData)
 {
     lock_guard<mutex> lock(logMutex); // Ensure thread safety
-
-    json logEntry = {
+    
+    json logEntryObj = {
         {"timestamp", getCurrentTimestamp()},
-        {"level", level},
         {"component", component},
+        {"log_level", level},
         {"message", message},
         {"data", extraData}};
 
-    string LogString = logEntry.dump();
+    string logEntryStr = logEntryObj.dump();
 
     string hmacKey = getHMACKey();
     cout << "DEBUG: HMAC key used for logging: " << hmacKey << endl;
 
-    vector<unsigned char> Data(LogString.begin(), LogString.end());
+    vector<unsigned char> Data(logEntryStr.begin(), logEntryStr.end());
+
     vector<unsigned char> KeyData = hexStringToBytes(hmacKey);
 
-    cout << "DEBUG: Log string used for HMAC (logging): " << LogString << endl;
+    cout << "DEBUG: logEntry string used for HMAC (logging): " << logEntryStr << endl;
 
     vector<unsigned char> hmac = generateHMAC(Data, KeyData);
     
@@ -53,10 +54,8 @@ void writeLog(const string &level, const string &component, const string &messag
         oss << hex << setw(2) << setfill('0') << (int)c;
     }
 
-    // store the HMAC in the log entry
-    logEntry["hmac"] = oss.str();
     //Store in DB
-    bool db_ok = insertLog(component, message, level, LogString ,oss.str());
+    bool db_ok = insertLog(component, message, level, logEntryStr ,oss.str());
     if((!db_ok))
     {
         cerr << "DB insert failed; writing to file only. "
@@ -69,7 +68,11 @@ void writeLog(const string &level, const string &component, const string &messag
     ofstream logFile(LOG_FILE, ios::app);
     if (logFile.is_open())
     {
-        logFile << logEntry.dump() << endl;
+        json fileEntry ={
+            {"payload", logEntryObj}, 
+            {"hmac", oss.str()}
+        };
+        logFile << fileEntry.dump() << endl;
         logFile.close();
     }
 }
@@ -94,12 +97,17 @@ bool verifyLogIntegrity(int log_id)
     string payload = logEntry["payload"].get<string>();
     string storedHMAC = logEntry["hmac"].get<string>();
 
+    if(payload.empty())
+    {
+        cerr << "verifyLogIntegrity: Log ID " << log_id 
+             << " is a legacy row with empty payload; cannot verify integrity." << endl;
+        return false;
+    }
+
     string hmacKey = getHMACKey();
     cout << "DEBUG: HMAC key used for verification: " << hmacKey << endl;
     vector<unsigned char> Data(payload.begin(), payload.end());
     vector<unsigned char> keyData = hexStringToBytes(hmacKey);
-
-    
     vector<unsigned char> expectedHMAC = generateHMAC(Data, keyData);
 
     ostringstream oss;
