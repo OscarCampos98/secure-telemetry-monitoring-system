@@ -1,0 +1,8 @@
+
+# Build artifacts / binaries
+secure_app
+secure_app_with_logging
+logs/test_logger
+database/test_log_db
+database/test_logs
+*.o
