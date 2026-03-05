@@ -6,3 +6,9 @@ logs/test_logger
 database/test_log_db
 database/test_logs
 *.o
+
+# Runtime logs
+*.log
+secure_monitoring.log
+logs/secure_monitoring.log
+src/secure_monitoring.log
