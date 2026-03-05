@@ -2,16 +2,41 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <string>
+#include <stdlib>
 
 using json = nlohmann::json;
 
 using namespace std;
 using namespace pqxx;
 
-//Conection string helper 
-static std::string getConnString()
+// Connection string helper (NO hardcoded secrets)
+static string getConnString()
 {
-    return "dbname=secure_logging user=telemetry_user password=REDACTED hostaddr=127.0.0.1 port=5432";
+    // Preferred: full connection string in one env var
+    if (const char* full = getenv("STMS_DB_CONN"); full && *full)
+        return string(full);
+
+    // Fallback: build from individual env vars
+    const char* db   = getenv("STMS_DB_NAME");
+    const char* user = getenv("STMS_DB_USER");
+    const char* pass = getenv("STMS_DB_PASS");
+    const char* host = getenv("STMS_DB_HOST");
+    const char* port = getenv("STMS_DB_PORT");
+
+    if (!db || !user || !pass)
+    {
+        std::cerr << "DB config missing. Set STMS_DB_CONN or STMS_DB_NAME/STMS_DB_USER/STMS_DB_PASS.\n";
+        return "";
+    }
+
+    std::string h = host ? host : "127.0.0.1";
+    std::string p = port ? port : "5432";
+
+    return "dbname=" + std::string(db) +
+           " user=" + std::string(user) +
+           " password=" + std::string(pass) +
+           " hostaddr=" + h +
+           " port=" + p;
 }
 
 static bool logExists(const std::string &component,
