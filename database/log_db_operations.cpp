@@ -1,117 +1,85 @@
+#include <pqxx/pqxx>
+#include <nlohmann/json.hpp>
 #include <iostream>
-#include <pqxx/pqxx>         // PostgreSQL C++ library
-#include <nlohmann/json.hpp> // JSON library for structured logs
+#include <string>
 
 using json = nlohmann::json;
 
 using namespace std;
 using namespace pqxx;
 
-// Function to establish a connection to the database
-// returns a pointer to a pqxx::connection object
-connection *connectToDB()
+//Conection string helper 
+static std::string getConnString()
+{
+    return "dbname=secure_logging user=telemetry_user password=REDACTED hostaddr=127.0.0.1 port=5432";
+}
+
+static bool logExists(const std::string &component,
+                      const std::string &message,
+                      const std::string &log_level)
 {
     try
     {
-        // Create a new connection instance with given cridentials
-        connection *conn = new connection("dbname=secure_logging user=telemetry_user password=REDACTED hostaddr=127.0.0.1 port=5432");
-
-        // check if connection is open
-        if (conn->is_open())
-        {
-            cout << "Connected to PostgreSQL database: " << conn->dbname() << endl;
-        }
-        else
-        {
-            cerr << "Failed to connect to the database!" << endl;
-            delete conn; // Clean up memory if connection fails
-            return nullptr;
-        }
-
-        return conn; // Return the connection object
-    }
-    catch (const exception &e)
-    {
-        cerr << "Error: " << e.what() << endl;
-        return nullptr;
-    }
-}
-
-// Function to close the database connection
-void closeDBConnection(connection *conn)
-{
-    if (conn)
-    {
-        conn->disconnect(); // perform disconnection
-        delete conn;        // free memory allocation
-        cout << "Connection closed successfully." << endl;
-    }
-}
-
-bool logExists(const string &component, const string &message, const string &log_level)
-{
-    try
-    {
-        connection *conn = connectToDB();
-        if (!conn)
-        {
-            cout << "DEGUG: logExists() - Connection failed!" << endl;
+        pqxx::connection conn(getConnString());
+        if (!conn.is_open())
             return false;
+
+        int count = 0;
+        {
+            pqxx::nontransaction txn(conn);
+
+            std::string query =
+                "SELECT COUNT(*) FROM logs WHERE component = " + txn.quote(component) +
+                " AND message = " + txn.quote(message) +
+                " AND log_level = " + txn.quote(log_level);
+
+            pqxx::result res = txn.exec(query);
+            if (!res.empty())
+                count = res[0][0].as<int>(0);
         }
-
-        nontransaction txn(*conn); // create a non-transaction object
-
-        // SQL query to check if a log entry already exists
-        string query = "SELECT COUNT(*) FROM logs WHERE component = " + txn.quote(component) +
-                       " AND message = " + txn.quote(message) + " AND log_level = " + txn.quote(log_level);
-
-        result res = txn.exec(query); // execute the query
-        closeDBConnection(conn);      // close the connection
-
-        int count = res[0][0].as<int>(); // returns true if log exists
-        // cout << "DEBUG: logExists() - Count of existing log: " << count << endl;
 
         return count > 0;
     }
-    catch (const exception &e)
+    catch (const std::exception &e)
     {
-        cerr << "Error checking if log exists: " << e.what() << endl;
+        std::cerr << "Error checking if log exists: " << e.what() << std::endl;
         return false;
     }
 }
 
 // Insert a new log entry
-bool insertLog(const string &component, const string &message, const string &log_level, const string &hmac)
+bool insertLog(const string &component,
+               const string &message,
+               const string &log_level,
+               const string &payload,
+               const string &hmac)
 {
     try
     {
-        if (logExists(component, message, log_level))
+        pqxx::connection conn(getConnString());
+        if (!conn.is_open())
+            return false;
+
         {
-            cout << "Log already exists! Skipping insertion" << endl;
-            return false;
+            pqxx::work txn(conn);
+
+            string query =
+                "INSERT INTO logs (component, message, log_level, payload, hmac) VALUES (" +
+                txn.quote(component) + ", " +
+                txn.quote(message) + ", " +
+                txn.quote(log_level) + ", " +
+                txn.quote(payload) + ", " +
+                txn.quote(hmac) + ")";
+
+            txn.exec(query);
+            txn.commit();
         }
-
-        connection *conn = connectToDB();
-        if (!conn)
-            return false;
-
-        work txn(*conn); // create a transaction object
-
-        // SQL query to insert a new log entry
-        string query = "INSERT INTO logs (component, message, log_level, hmac) VALUES (" +
-                       txn.quote(component) + ", " + txn.quote(message) + ", " +
-                       txn.quote(log_level) + ", " + txn.quote(hmac) + ")";
-        txn.exec(query);         // execute the query
-        txn.commit();            // commit the transaction
-        closeDBConnection(conn); // close the connection
-
-        // cout << "DEBUG: insertLog() - Log successfully inserted!" << endl;
 
         return true;
     }
-    catch (const pqxx::unique_violation &e) // Catch unique constraint violation
+    catch (const pqxx::unique_violation &e)
     {
-        cerr << "Error: Duplicate log entry detected! " << e.what() << endl;
+        cerr << "Duplicate prevented by DB: " << e.what() << endl;
         return false;
     }
     catch (const exception &e)
@@ -121,20 +89,23 @@ bool insertLog(const string &component, const string &message, const string &log
     }
 }
 
+
 // Delete a log entry by ID
 bool deleteLog(int log_id)
 {
     try
     {
-        connection *conn = connectToDB();
-        if (!conn)
+        pqxx::connection conn(getConnString());
+        if (!conn.is_open())
             return false;
 
-        work txn(*conn);
-        string query = "DELETE FROM logs WHERE id = " + txn.quote(log_id);
-        txn.exec(query);
-        txn.commit();
-        closeDBConnection(conn);
+        {
+            pqxx::work txn(conn);
+            string query = "DELETE FROM logs WHERE id = " + txn.quote(log_id);
+            txn.exec(query);
+            txn.commit();
+        }
+
         return true;
     }
     catch (const exception &e)
@@ -149,15 +120,20 @@ bool updateLog(int log_id, const string &new_message)
 {
     try
     {
-        connection *conn = connectToDB();
-        if (!conn)
+        pqxx::connection conn(getConnString());
+        if (!conn.is_open())
             return false;
 
-        work txn(*conn);
-        string query = "UPDATE logs SET message = " + txn.quote(new_message) + " WHERE id = " + txn.quote(log_id);
-        txn.exec(query);
-        txn.commit();
-        closeDBConnection(conn);
+        {
+            pqxx::work txn(conn);
+            string query =
+                "UPDATE logs SET message = " + txn.quote(new_message) +
+                " WHERE id = " + txn.quote(log_id);
+
+            txn.exec(query);
+            txn.commit();
+        }
+
         return true;
     }
     catch (const exception &e)
@@ -168,26 +144,36 @@ bool updateLog(int log_id, const string &new_message)
 }
 
 // Fetch all logs (limit optional)
-void fetchLogs(int limit = 10)
+void fetchLogs(int limit)
 {
     try
     {
-        connection *conn = connectToDB();
-        if (!conn)
-            return;
-
-        nontransaction txn(*conn); // create a non-transaction object
-        string query = "SELECT * FROM logs ORDER BY timestamp DESC LIMIT " + to_string(limit);
-        result res = txn.exec(query); // execute the query
-
-        // loop through the each row print log details
-        for (const auto &row : res)
+        pqxx::connection conn(getConnString());
+        if (!conn.is_open())
         {
-            cout << "ID: " << row["id"].as<int>() << " | Component: " << row["component"].as<string>()
-                 << " | Message: " << row["message"].as<string>() << " | Log Level: " << row["log_level"].as<string>()
-                 << " | HMAC: " << row["hmac"].as<string>() << " | Timestamp: " << row["timestamp"].as<string>() << endl;
+            cerr << "Failed to connect to DB for fetchLogs()." << endl;
+            return;
         }
-        closeDBConnection(conn);
+
+        {
+            pqxx::nontransaction txn(conn);
+            string query =
+                "SELECT * FROM logs ORDER BY timestamp DESC LIMIT " + to_string(limit);
+
+            pqxx::result res = txn.exec(query);
+
+            for (const auto &row : res)
+            {
+                cout
+                    << "ID: " << row["id"].as<int>()
+                    << " | Component: " << row["component"].as<string>()
+                    << " | Message: " << row["message"].as<string>()
+                    << " | Log Level: " << row["log_level"].as<string>()
+                    << " | HMAC: " << row["hmac"].as<string>()
+                    << " | Timestamp: " << row["timestamp"].as<string>()
+                    << endl;
+            }
+        }
     }
     catch (const exception &e)
     {
@@ -199,50 +185,84 @@ json fetchLogById(int log_id)
 {
     try
     {
-        // cout << "DEBUG: Connecting to DB..." << endl;
-        connection *conn = connectToDB();
-        if (!conn)
-        {
-            // cout << "DEBUG: Connection failed." << endl;
+        pqxx::connection conn(getConnString());
+        if (!conn.is_open())
             return json{{"error", "Connection failed"}};
-        }
 
-        // cout << "DEBUG: Running query..." << endl;
-        nontransaction txn(*conn);
-        string query = "SELECT * FROM logs WHERE id = " + to_string(log_id);
-        result res = txn.exec(query);
+        json logEntry;
 
-        // cout << "DEBUG: Query executed. Rows returned: " << res.size() << endl;
-
-        if (res.empty())
         {
-            closeDBConnection(conn);
-            return json{{"error", "Log not found"}}; // return errror JSON explicitly
+            pqxx::nontransaction txn(conn);
+            std::string query = "SELECT * FROM logs WHERE id = " + txn.quote(log_id);
+            pqxx::result res = txn.exec(query);
+
+            if (res.empty())
+            {
+                logEntry = json{{"error", "Log not found"}};
+            }
+            else
+            {
+                const auto &row = res[0];
+                logEntry = {
+                    {"id", row["id"].as<int>()},
+                    {"timestamp", row["timestamp"].as<std::string>()},
+                    {"component", row["component"].as<std::string>()},
+                    {"message", row["message"].as<std::string>()},
+                    {"log_level", row["log_level"].as<std::string>()},
+                    {"payload", row["payload"].as<std::string>()},
+                    {"hmac", row["hmac"].as<std::string>()}};
+            }
         }
 
-        const auto &row = res[0];
-
-        // cout << "DEBUG: Fetching fields..." << endl;
-
-        json logEntry = {
-            {"id", row["id"].as<int>()},
-            {"timestamp", row["timestamp"].as<string>()},
-            {"component", row["component"].as<string>()},
-            {"message", row["message"].as<string>()},
-            {"log_level", row["log_level"].as<string>()},
-            {"hmac", row["hmac"].as<string>()}};
-
-        // cout << "DEBUG: Fields fetched successfully!" << endl;
-
-        closeDBConnection(conn); // <--- Ensure we close after JSON construction
-
-        // cout << "DEBUG: JSON Object Constructed: " << logEntry.dump(4) << endl;
-
-        return logEntry; // Returning JSON safely
+        return logEntry;
     }
-    catch (const exception &e)
+    catch (const std::exception &e)
     {
-        cerr << "Error fetching log by ID: " << e.what() << endl;
+        std::cerr << "Error fetching log by ID: " << e.what() << std::endl;
         return json{{"error", "Exception occurred"}};
     }
 }
+
+json fetchLatestLog()
+{
+    try
+    {
+        pqxx::connection conn(getConnString());
+        if (!conn.is_open())
+            return json{{"error", "Connection failed"}};
+
+        json logEntry;
+
+        {
+            pqxx::nontransaction txn(conn);
+            pqxx::result res = txn.exec("SELECT * FROM logs ORDER BY id DESC LIMIT 1");
+
+            if (res.empty())
+            {
+                logEntry = json{{"error", "No logs found"}};
+            }
+            else
+            {
+                const auto &row = res[0];
+                logEntry = {
+                    {"id", row["id"].as<int>()},
+                    {"timestamp", row["timestamp"].as<std::string>()},
+                    {"component", row["component"].as<std::string>()},
+                    {"message", row["message"].as<std::string>()},
+                    {"log_level", row["log_level"].as<std::string>()},
+                    {"payload", row["payload"].as<std::string>()},
+                    {"hmac", row["hmac"].as<std::string>()}};
+            }
+        }
+
+        return logEntry;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Error fetching latest log: " << e.what() << std::endl;
+        return json{{"error", "Exception occurred"}};
+    }
+}
+        
+        
+ 
