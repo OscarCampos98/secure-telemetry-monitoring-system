@@ -1,7 +1,7 @@
 # Compiler and flags
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -I.
-LDFLAGS = -lssl -lcrypto -lpqxx -lpq
+LDFLAGS = -lssl -lcrypto -lpqxx -lpq -lgpiod
 
 # Source files
 SOURCES = main.cpp telemetry.cpp encrypt_decrypt.cpp led_control.cpp utils.cpp ../logs/logger.cpp ../database/log_db_operations.cpp

@@ -25,9 +25,7 @@ bool hasGPIO = false; // NEW: Indicates if GPIO pins are available
 // Function to check if GPIO pins are available
 bool checkGPIOAvailability()
 {
-    ifstream exportfile("/sys/class/gpio/export");
-    ifstream unexportfile("/sys/class/gpio/unexport");
-    return  exportfile.good() && unexportfile.good();
+    return access("/dev/gpiochip0", R_OK | W_OK) == 0;
 }
 
 bool initializeGPIO()

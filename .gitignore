@@ -12,3 +12,14 @@ database/test_logs
 secure_monitoring.log
 logs/secure_monitoring.log
 src/secure_monitoring.log
+
+#Build Outputs
+*.o
+src/SCMonitoring
+SCMonitoring
+
+#Logs
+*.log
+
+#Database secrets 
+.env
