@@ -2,7 +2,7 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <string>
-#include <stdlib>
+#include <cstdlib>
 
 using json = nlohmann::json;
 

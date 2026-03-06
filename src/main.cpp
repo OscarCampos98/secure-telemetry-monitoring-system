@@ -25,8 +25,27 @@ bool hasGPIO = false; // NEW: Indicates if GPIO pins are available
 // Function to check if GPIO pins are available
 bool checkGPIOAvailability()
 {
-    ifstream gpioTest("/sys/class/gpio/");
-    return gpioTest.good();
+    ifstream exportfile("/sys/class/gpio/export");
+    ifstream unexportfile("/sys/class/gpio/unexport");
+    return  exportfile.good() && unexportfile.good();
+}
+
+bool initializeGPIO()
+{
+    try
+    {
+        exportGPIO(GREEN_LED);
+        exportGPIO(RED_LED);
+        setDirection(GREEN_LED, "out");
+        setDirection(RED_LED, "out");
+        return true;
+    }
+    catch (const exception &e)
+    {
+        cerr << "GPIO initialization failed: " << e.what() << endl;
+        cerr << "Falling back to text-based indicators." << endl;
+        return false;
+    }
 }
 
 // Function to enable non-blocking input detection
@@ -165,35 +184,32 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
     {
         if (lastFormattedMessage.empty())
         {
-            // No message to check
             logWarning("Command", "STATUS requested, but no message was sent.", {{"command", command}});
             cout << "STATUS requested, but no message was sent." << endl;
 
             if (hasGPIO)
+            {
                 errorDetected();
+                allOff();
+            }
             else
+            {
                 cout << "Result: invalid (R)" << endl;
-            allOff();
+            }
         }
         else
         {
-            // Attempt to decrypt and verify the last message
-            // vector<unsigned char> ciphertext = macAndEncrypt(lastFormattedMessage, key, iv, macKey);
             vector<unsigned char> data = decrypt(lastCiphertext, key, iv);
 
-            // Generate keys
-            //  Extract MAC,hash, and original JSON
-            vector<unsigned char> extractedMAC(data.begin(), data.begin() + 32);       // First 32 bytes = MAC
-            vector<unsigned char> extractedHash(data.begin() + 32, data.begin() + 64); // second 32 bytes = hash
-            vector<unsigned char> extractedPlaintext(data.begin() + 64, data.end());   // Rest = cyphertext
+            vector<unsigned char> extractedMAC(data.begin(), data.begin() + 32);
+            vector<unsigned char> extractedHash(data.begin() + 32, data.begin() + 64);
+            vector<unsigned char> extractedPlaintext(data.begin() + 64, data.end());
 
-            // Validate the MAC
             vector<unsigned char> macData(extractedHash.begin(), extractedHash.end());
             macData.insert(macData.end(), extractedPlaintext.begin(), extractedPlaintext.end());
 
             bool result = validateMAC(macData, macKey, extractedMAC);
 
-            // Construct a simplified JSON output
             json parsedMessage = json::parse(lastFormattedMessage);
             json message = {
                 {"command", parsedMessage["command"]},
@@ -205,10 +221,8 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
             logInfo("Validation", "Message check performed.", message);
             cout << "System Status: " << message.dump(4) << endl;
 
-            // Indicate status via LED
             if (result)
             {
-                // Indicate error via LED or manually
                 if (hasGPIO)
                     normalOperation();
                 else
@@ -216,7 +230,6 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
             }
             else
             {
-                // Indicate error via LED or manually
                 if (hasGPIO)
                     tamperingDetected();
                 else
@@ -233,11 +246,16 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
             cout << "No message to decrypt!" << endl;
             // Indicate error via LED
             if (hasGPIO)
+            {
                 errorDetected();
+                this_thread::sleep_for(chrono::seconds(3));
+                allOff();
+            }
             else
+            {
                 cout << "Result: invalid (R)" << endl;
-            this_thread::sleep_for(chrono::seconds(3));
-            allOff();
+                this_thread::sleep_for(chrono::seconds(3));
+            }
             return;
         }
 
@@ -325,8 +343,14 @@ void handleCommand(const string &command, string &lastFormattedMessage, vector<u
     {
         logInfo("Command", "Exiting program...", {});
         cout << "Exiting program..." << endl;
-        unexportGPIO(GREEN_LED);
-        unexportGPIO(RED_LED);
+
+        if (hasGPIO)
+        {
+            allOff();
+            unexportGPIO(GREEN_LED);
+            unexportGPIO(RED_LED);
+        }
+
         exit(0);
     }
     else
@@ -341,41 +365,48 @@ int main()
     // User preferences for the system
     char userResponse;
     bool validResponce = false;
+
     while (!validResponce)
     {
-
         cout << "Do you have a GPIO breadboard setup? (y/n): ";
         cin >> userResponse;
 
         if (userResponse == 'y' || userResponse == 'Y')
         {
-            hasGPIO = checkGPIOAvailability();
-            if (hasGPIO)
+            if (checkGPIOAvailability())
             {
-                cout << "GPIO detected. Using GPIO LEDs." << endl;
+                cout << "GPIO interface detected." << endl;
                 cout << "Green LED GPIO Pin: 19" << endl;
                 cout << "Red LED GPIO Pin: 26" << endl;
 
                 char setupResponse;
                 cout << "Do you need 5 minutes to set up the breadboard? (y/n): ";
                 cin >> setupResponse;
+
                 if (setupResponse == 'y' || setupResponse == 'Y')
                 {
-                    // clear the input buffer before the timer starts
                     cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     waitForSetup();
                 }
+
                 cout << "Proceeding to initialize GPIO setup..." << endl;
-                // Initialize LEDs
-                exportGPIO(GREEN_LED);
-                exportGPIO(RED_LED);
-                setDirection(GREEN_LED, " out");
-                setDirection(RED_LED, " out");
+                hasGPIO = initializeGPIO();
+
+                if (hasGPIO)
+                {
+                    cout << "GPIO initialized successfully. Using GPIO LEDs." << endl;
+                }
+                else
+                {
+                    cout << "GPIO unavailable. Using text-based indicators instead." << endl;
+                }
             }
             else
             {
-                cout << "GPIO not accessible. Falling back to text output." << endl;
+                cout << "GPIO interface not accessible. Falling back to text output." << endl;
+                hasGPIO = false;
             }
+
             validResponce = true;
         }
         else if (userResponse == 'n' || userResponse == 'N')
@@ -386,7 +417,7 @@ int main()
         }
         else
         {
-            cout << "Invalid response, please enter 'y' or 'n'. " << endl;
+            cout << "Invalid response, please enter 'y' or 'n'." << endl;
         }
     }
 
@@ -410,9 +441,12 @@ int main()
     catch (const exception &e)
     {
         cerr << "Error: " << e.what() << endl;
-        allOff();
-        unexportGPIO(GREEN_LED);
-        unexportGPIO(RED_LED);
+        if (hasGPIO)
+        {
+            allOff();
+            unexportGPIO(GREEN_LED);
+            unexportGPIO(RED_LED);
+        }
     }
 
     return 0;

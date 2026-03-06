@@ -73,6 +73,13 @@ void setValue(const string &pin, const string &value)
 
 void unexportGPIO(const string &pin)
 {
+    ifstream gpioCheck("/sys/class/gpio/gpio" + pin);
+    if (!gpioCheck.good())
+    {
+        return;
+    }
+    gpioCheck.close();
+
     cout << "Unexporting GPIO " << pin << " ..." << endl;
     writeToFile("/sys/class/gpio/unexport", pin);
 }
