@@ -283,6 +283,7 @@ STMS_DB_PORT=5432
 STMS_DB_PASS=stms
 ./SCMonitoring
 ```
+
 If database variables are not provided, the system **falls back to file logging**.
 
 ---
