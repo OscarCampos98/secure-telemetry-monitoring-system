@@ -16,17 +16,27 @@ This system demonstrates core principles used in **embedded systems, secure comm
 
 # Project Motivation
 
-Uncrewed vehicles rely on secure telemetry channels to transmit commands and system data. If telemetry or command messages are modified during transmission, it can lead to **system compromise or loss of control**.
+This project was developed to further explore **secure system design, database logging, and embedded monitoring** in a practical environment.
 
-This project demonstrates how a secure communication pipeline can be built with:
+Prior to this system, I implemented a **Secure Device Communication Protocol** in Python that simulated secure communication between a hardware device and an operating system. That project focused on cryptographic operations such as encryption, signing, key negotiation, and firmware validation to simulate real-world hardware security challenges.
 
-- **Confidentiality** (AES encryption)
-- **Integrity verification** (HMAC validation)
-- **Real-time hardware feedback** (GPIO LEDs)
-- **Persistent security logging** (PostgreSQL)
+Building on that foundation, this project extends the concept into a **C++-based monitoring system running on Raspberry Pi hardware**. The goal was to:
 
-The goal is to simulate how **secure command channels for remote systems** can be implemented in practice.
+- continue developing **security-focused software systems**
+- gain hands-on experience with **Raspberry Pi hardware integration**
+- design and implement a **PostgreSQL-backed logging system**
+- strengthen practical skills in **SQL and PostgreSQL database design**
 
+Uncrewed vehicles and remote systems rely on secure telemetry channels to transmit commands and system data. If telemetry or command messages are modified during transmission, it can lead to **system compromise or loss of control**.
+
+This project demonstrates how a secure communication pipeline can be built using:
+
+- **Confidentiality** through AES-256 encryption
+- **Integrity verification** through HMAC-SHA-256 validation
+- **Real-time hardware feedback** using Raspberry Pi GPIO LEDs
+- **Persistent security logging** using PostgreSQL
+
+The goal is to simulate how **secure command channels and monitoring systems for remote or autonomous platforms** can be implemented in practice.
 ---
 
 # Key Features
