@@ -243,8 +243,8 @@ LEDs are controlled through **transistor switching** for safe GPIO operation.
 
 Example system session:
 
-add photo here 
-
+![Terminal Example](Images/SCMonitoring1.png)
+![Terminal Example Continue](Images/SCMonitoring2.png)
 ---
 
 # Future Improvements
