@@ -195,10 +195,11 @@ secure-telemetry-monitoring-system/
 │   ├── database_config.json
 │   └── test_log_db_operations.cpp
 │
-├── logs/                         # Logging subsystem
+├── logs/                         # Logging subsystem + runtime logs
 │   ├── logger.cpp
 │   ├── logger.h
-│   └── test_logger.cpp
+│   ├── test_logger.cpp
+│   └── secure_monitoring.log
 │
 ├── docs/                         # Project documentation
 │   ├── logger_info.md
@@ -207,13 +208,9 @@ secure-telemetry-monitoring-system/
 ├── test/                         # Testing utilities
 │   └── send_led_command.py
 │
-├── logs/                         # Runtime log output
-│   └── secure_monitoring.log
-│
 ├── .vscode/                      # VSCode project configuration
 │
 └── README.md
-```
 
 ## Secure Message Processing Flow
 
@@ -242,10 +239,20 @@ Status Output + LED Feedback
 
 # Build Instructions
 
-Navigate to the source directory:
-- cd src
-- Clean previous builds: make clean
+- Navigate to the source directory:
+```bash
+cd src
+```
+
+- Clean previous builds:
+```bash
+ make clean
+```
+
 - Compile the system: make
+```bash
+ make 
+```
 
 The build links against the following libraries:
 
@@ -255,10 +262,10 @@ The build links against the following libraries:
 - libgpiod
 
 Install dependencies on Debian-based systems:
-
-- sudo apt update
-- sudo apt install build-essential libssl-dev libpqxx-dev libgpiod-dev 
----
+```bash
+sudo apt update
+sudo apt install build-essential libssl-dev libpqxx-dev libgpiod-dev 
+```
 # Database Setup
 
 Create the PostgreSQL role and database:
