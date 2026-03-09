@@ -319,15 +319,15 @@ LEDs are controlled through **transistor switching** for safe GPIO operation.
 
 # Example Workflow
 
-SEND
+- SEND
 Telemetry generated
 Message encrypted successfully
 
-STATUS
+- STATUS
 MAC Validation: True
 System Status: Normal
 
-DECRYPT
+- DECRYPT
 Telemetry successfully decrypted
 
 Example system session:
