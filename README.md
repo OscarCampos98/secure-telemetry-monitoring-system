@@ -38,6 +38,9 @@ This project demonstrates how a secure communication pipeline can be built using
 
 The goal is to simulate how **secure command channels and monitoring systems for remote or autonomous platforms** can be implemented in practice.
 
+Related Project: Secure Device Communication Protocol (Python)
+https://github.com/yourusername/secure-device-communication
+
 ---
 
 # Key Features
@@ -137,50 +140,64 @@ If a MAC mismatch occurs:
 ---
 
 # System Architecture
-Telemetry Generator
-│
-▼
-Command Processor (main.cpp)
-│
-├── AES-256 Encryption
-│
-├── HMAC Validation
-│
-├── PostgreSQL Logging
-│
-└── GPIO Status Indicators
-├── GPIO 19 → Green (Normal)
-└── GPIO 26 → Red (Error / Tamper)
 
----
+```text
+                 +----------------------+
+                 |  Telemetry Generator |
+                 |    (telemetry.cpp)   |
+                 +----------+-----------+
+                            |
+                            v
+                 +----------------------+
+                 |  Command Processor   |
+                 |      (main.cpp)      |
+                 +----------+-----------+
+                            |
+        +-------------------+-------------------+
+        |                   |                   |
+        v                   v                   v
++---------------+   +---------------+   +------------------+
+| AES Encryption|   | HMAC Validation|   | Database Logging |
+| encrypt_decrypt|  | encrypt_decrypt|   | log_db_operations|
++---------------+   +---------------+   +------------------+
+        |
+        v
++----------------------+
+| Hardware Monitoring  |
+|   led_control.cpp    |
+|  GPIO19 / GPIO26     |
++----------------------+
+```
 
 # Repository Structure
-secure-telemetry-monitoring-system
-│
-├── src
-│ ├── main.cpp
-│ ├── encrypt_decrypt.cpp
-│ ├── telemetry.cpp
-│ ├── led_control.cpp
-│ ├── utils.cpp
-│ └── Makefile
-│
-├── include
-│ ├── encrypt_decrypt.h
-│ ├── telemetry.h
-│ ├── led_control.h
-│ └── utils.h
-│
-├── database
-│ ├── log_db_operations.cpp
-│ └── log_db_operations.h
-│
-├── logs
-│ └── secure_monitoring.log
-│
-└── README.md
 
----
+```bash
+secure-telemetry-monitoring-system/
+│
+├── src/                       # Core application source code
+│   ├── main.cpp
+│   ├── encrypt_decrypt.cpp
+│   ├── telemetry.cpp
+│   ├── led_control.cpp
+│   ├── utils.cpp
+│   └── Makefile
+│
+├── include/                   # Header files
+│   ├── encrypt_decrypt.h
+│   ├── telemetry.h
+│   ├── led_control.h
+│   └── utils.h
+│
+├── database/                  # PostgreSQL logging integration
+│   ├── log_db_operations.cpp
+│   └── log_db_operations.h
+│
+├── logs/                      # Local log fallback
+│   └── secure_monitoring.log
+│
+├── .gitignore
+└── README.md
+```
 
 # Build Instructions
 
