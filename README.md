@@ -35,6 +35,7 @@ This project demonstrates how a secure communication pipeline can be built using
 - **Integrity verification** through HMAC-SHA-256 validation
 - **Real-time hardware feedback** using Raspberry Pi GPIO LEDs
 - **Persistent security logging** using PostgreSQL
+
 The goal is to simulate how **secure command channels and monitoring systems for remote or autonomous platforms** can be implemented in practice.
 
 ---
