@@ -38,8 +38,12 @@ This project demonstrates how a secure communication pipeline can be built using
 
 The goal is to simulate how **secure command channels and monitoring systems for remote or autonomous platforms** can be implemented in practice.
 
-Related Project: Secure Device Communication Protocol (Python)
-https://github.com/yourusername/secure-device-communication
+### Related Project
+
+This project builds on a previous security-focused project:
+
+**Secure Device Communication Protocol (Python)**  
+https://github.com/YOUR_USERNAME/secure-device-communication
 
 ---
 
@@ -122,8 +126,9 @@ This ensures message confidentiality during transmission.
 Each message includes a **Message Authentication Code (MAC)**.
 
 During validation the system verifies:
+```
 HMAC(message) == received MAC
-
+```
 
 If the values differ, the system flags **tampering**.
 
