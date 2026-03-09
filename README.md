@@ -174,38 +174,73 @@ If a MAC mismatch occurs:
 ```bash
 secure-telemetry-monitoring-system/
 │
-├── src/                       # Core application source code
-│   ├── main.cpp
-│   ├── encrypt_decrypt.cpp
-│   ├── telemetry.cpp
-│   ├── led_control.cpp
-│   ├── utils.cpp
-│   └── Makefile
+├── src/                          # Core system source code
+│   ├── main.cpp                  # Main command processor
+│   ├── encrypt_decrypt.cpp       # AES encryption + HMAC validation
+│   ├── telemetry.cpp             # Telemetry data generator
+│   ├── led_control.cpp           # Raspberry Pi GPIO LED control
+│   ├── utils.cpp                 # Shared utility functions
+│   └── Makefile                  # Build configuration
 │
-├── include/                   # Header files
-│   ├── encrypt_decrypt.h
-│   ├── telemetry.h
-│   ├── led_control.h
-│   └── utils.h
-│
-├── database/                  # PostgreSQL logging integration
+├── database/                     # PostgreSQL database integration
 │   ├── log_db_operations.cpp
-│   └── log_db_operations.h
+│   ├── log_db_operations.h
+│   ├── database_schema.sql
+│   ├── database_utils.cpp
+│   ├── database_config.json
+│   └── test_log_db_operations.cpp
 │
-├── logs/                      # Local log fallback
+├── logs/                         # Logging subsystem
+│   ├── logger.cpp
+│   ├── logger.h
+│   └── test_logger.cpp
+│
+├── docs/                         # Project documentation
+│   ├── logger_info.md
+│   └── ReadMe
+│
+├── test/                         # Testing utilities
+│   └── send_led_command.py
+│
+├── logs/                         # Runtime log output
 │   └── secure_monitoring.log
 │
-├── .gitignore
+├── .vscode/                      # VSCode project configuration
+│
 └── README.md
 ```
+
+## Secure Message Processing Flow
+
+```text
+Telemetry Data
+     │
+     ▼
+JSON Message Creation
+     │
+     ▼
+AES-256 Encryption
+     │
+     ▼
+HMAC Generation
+     │
+     ▼
+Secure Message Storage
+     │
+     ▼
+Command Validation
+     │
+     ▼
+Status Output + LED Feedback
+```
+
 
 # Build Instructions
 
 Navigate to the source directory:
--cd src
--Clean previous builds: make clean
+- cd src
+- Clean previous builds: make clean
 - Compile the system: make
-
 
 The build links against the following libraries:
 
@@ -215,10 +250,9 @@ The build links against the following libraries:
 - libgpiod
 
 Install dependencies on Debian-based systems:
-- sudo apt update
-- sudo apt install build-essential libssl-dev libpqxx-dev libgpiod-dev
 
- 
+- sudo apt update
+- sudo apt install build-essential libssl-dev libpqxx-dev libgpiod-dev 
 ---
 
 # Run Instructions
@@ -226,7 +260,7 @@ Install dependencies on Debian-based systems:
 Launch the system:
 - ./SCMonitoring
 You will be prompted whether GPIO hardware is available.
--Use GPIO hardware? (y/n):
+- Use GPIO hardware? (y/n):
 
 If unavailable, the system runs in **terminal monitoring mode**.
 
