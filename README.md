@@ -254,24 +254,11 @@ Install dependencies on Debian-based systems:
 - sudo apt update
 - sudo apt install build-essential libssl-dev libpqxx-dev libgpiod-dev 
 ---
-
-# Run Instructions
-
-Launch the system:
-- ./SCMonitoring
-You will be prompted whether GPIO hardware is available.
-- Use GPIO hardware? (y/n):
-
-If unavailable, the system runs in **terminal monitoring mode**.
-
----
-
 # Database Setup
 
 Create the PostgreSQL role and database:
-CREATE ROLE telemetry_user LOGIN PASSWORD 'stms';
-CREATE DATABASE secure_logging OWNER telemetry_user;
-
+- CREATE ROLE telemetry_user LOGIN PASSWORD 'stms';
+- CREATE DATABASE secure_logging OWNER telemetry_user;
 
 Run the application with database configuration:
 
@@ -284,6 +271,17 @@ STMS_DB_PASS=stms
 
 
 If database variables are not provided, the system **falls back to file logging**.
+
+---
+
+# Run Instructions
+
+Launch the system:
+- ./SCMonitoring
+You will be prompted whether GPIO hardware is available.
+- Use GPIO hardware? (y/n):
+
+If unavailable, the system runs in **terminal monitoring mode**.
 
 ---
 
@@ -320,15 +318,6 @@ Potential extensions for the system include:
 - distributed monitoring dashboards
 - message replay protection
 - key management improvements
-
----
-
-# Resume-Ready Summary
-
-**Secure Communication and Monitoring System — C++, Linux, Raspberry Pi**
-
-- Developed a secure telemetry communication system implementing **AES-256 encryption and HMAC-SHA-256 validation** for tamper-resistant command channels.
-- Integrated **PostgreSQL logging and Raspberry Pi GPIO monitoring using libgpiod**, enabling real-time system status indicators and persistent security event tracking.
 
 ---
 
