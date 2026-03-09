@@ -269,19 +269,20 @@ sudo apt install build-essential libssl-dev libpqxx-dev libgpiod-dev
 # Database Setup
 
 Create the PostgreSQL role and database:
-- CREATE ROLE telemetry_user LOGIN PASSWORD 'stms';
-- CREATE DATABASE secure_logging OWNER telemetry_user;
-
+```SQL
+CREATE ROLE telemetry_user LOGIN PASSWORD 'stms';
+CREATE DATABASE secure_logging OWNER telemetry_user;
+```
 Run the application with database configuration:
 
+```bash
 STMS_DB_NAME=secure_logging
 STMS_DB_USER=telemetry_user
 STMS_DB_HOST=127.0.0.1
 STMS_DB_PORT=5432
 STMS_DB_PASS=stms
 ./SCMonitoring
-
-
+```
 If database variables are not provided, the system **falls back to file logging**.
 
 ---
@@ -289,11 +290,15 @@ If database variables are not provided, the system **falls back to file logging*
 # Run Instructions
 
 Launch the system:
-- ./SCMonitoring
+```bash
+./SCMonitoring
+```
 You will be prompted whether GPIO hardware is available.
-- Use GPIO hardware? (y/n):
-
-If unavailable, the system runs in **terminal monitoring mode**.
+```plain text
+Use GPIO hardware? (y/n):
+```
+- y → enables Raspberry Pi GPIO LED monitoring
+- n → runs the system in terminal-only mode
 
 ---
 
@@ -312,6 +317,17 @@ LEDs are controlled through **transistor switching** for safe GPIO operation.
 ---
 
 # Example Workflow
+
+SEND
+Telemetry generated
+Message encrypted successfully
+
+STATUS
+MAC Validation: True
+System Status: Normal
+
+DECRYPT
+Telemetry successfully decrypted
 
 Example system session:
 
